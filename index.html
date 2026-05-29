@@ -33,7 +33,6 @@
             transition: background-color 0.3s ease;
         }
 
-        /* === 【ノイズ演出】解析中の背景：たまに画面全体がガクつく === */
         body.analyzing-state {
             background-color: #120c00 !important;
             background-image: 
@@ -42,13 +41,12 @@
             animation: pulse-amber 1s infinite alternate, body-glitch 4s infinite;
         }
 
-        /* === 【ノイズ演出】エラー時の背景：激しく画面全体がガクつく === */
         body.error-state {
             background-color: #1a0000 !important;
             background-image: 
                 radial-gradient(circle at 50% 50%, rgba(255, 51, 51, 0.15) 0%, transparent 80%),
                 linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
-            animation: body-glitch 0.5s infinite; /* エラー時は常に激しく振動 */
+            animation: body-glitch 0.5s infinite;
         }
 
         .system-clock {
@@ -70,7 +68,7 @@
             border: 1px solid var(--neon-green);
             box-shadow: 0 0 20px rgba(0, 255, 102, 0.2);
             text-align: center;
-            max-width: 420px; /* 「た。」の改行を防ぐために少し広げています */
+            max-width: 420px;
             width: 100%;
             box-sizing: border-box;
             backdrop-filter: blur(5px);
@@ -162,7 +160,6 @@
             animation: fadeIn 0.4s ease forwards;
         }
 
-        /* === 【ノイズ演出】解析中のテキスト：定期的にぶるっと震える === */
         .analyzing-title {
             color: var(--neon-amber);
             text-shadow: 0 0 10px var(--neon-amber);
@@ -199,7 +196,6 @@
             margin-bottom: 10px;
         }
 
-        /* === 【ノイズ演出】エラータイトル：激しく明滅＆ガクつく === */
         .error-title {
             color: var(--neon-red);
             text-shadow: 0 0 10px var(--neon-red);
@@ -229,7 +225,6 @@
             animation: blink 1.2s infinite;
         }
 
-        /* 成功メッセージ：改行を防止（ノイズやアニメーションは無しで安定） */
         .success-msg {
             word-break: keep-all;
             overflow-wrap: break-word;
@@ -270,7 +265,6 @@
             to { background-color: #1a1100; }
         }
 
-        /* === 【新設】文字がガクッ、ブルッと震えるノイズ（テキスト用） === */
         @keyframes text-glitch {
             0%, 85%, 89%, 93%, 100% {
                 transform: translate(0, 0) skew(0deg);
@@ -296,7 +290,6 @@
             }
         }
 
-        /* === 【新設】画面全体が瞬間的にがくっと揺れるノイズ（背景・パネル用） === */
         @keyframes body-glitch {
             0%, 92%, 96%, 100% {
                 transform: translate(0, 0);
@@ -367,6 +360,11 @@
 
     <script>
         const ENCRYPTED_PASSWORD = [50, 48, 50, 54]; 
+
+        // === 【追加】オーディオファイルの定義 ===
+        // 同一ディレクトリ内のファイルを指定
+        const audioSuccess = new Audio('success.m4a');
+        const audioError = new Audio('error.m4a');
 
         function updateClock() {
             const now = new Date();
@@ -468,12 +466,20 @@
             panel.classList.remove('analyzing-panel');
 
             if (checkPassword(input)) {
+                // === 【変更】成功音の再生 ===
+                audioSuccess.currentTime = 0; // 連続で呼ばれた時のために最初に戻す
+                audioSuccess.play().catch(e => console.log("Audio play prevented:", e));
+
                 successScreen.classList.add('active');
                 document.body.style.backgroundColor = '#003311';
                 setTimeout(() => {
                     document.body.style.backgroundColor = '#0a0e14';
                 }, 200);
             } else {
+                // === 【変更】失敗音の再生 ===
+                audioError.currentTime = 0;
+                audioError.play().catch(e => console.log("Audio play prevented:", e));
+
                 errorScreen.classList.add('active');
                 document.body.classList.add('error-state');
                 panel.classList.add('error-panel');
@@ -487,6 +493,10 @@
             const panel = document.getElementById('panel');
             const percentText = document.getElementById('percent-text');
             const scanProgress = document.getElementById('scan-progress');
+
+            // リトライ時に前回の失敗音が鳴り続けていたら止める処理（必要に応じて）
+            audioError.pause();
+            audioError.currentTime = 0;
 
             errorScreen.classList.remove('active');
             lockScreen.classList.add('active');
