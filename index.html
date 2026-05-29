@@ -10,6 +10,7 @@
             --neon-red: #ff3333;
             --neon-blue: #00d2ff;
             --neon-amber: #ffaa00;
+            --neon-purple: #ff00ff;
             --dark-bg: #0a0e14;
             --panel-bg: rgba(16, 24, 36, 0.8);
         }
@@ -33,10 +34,8 @@
             transition: background-color 0.3s ease;
         }
 
-        /* 時空改変ノイズ：コマンド入力後に画面全体がガクつく */
         body.time-hacked-state {
-            background-color: #071410 !important;
-            animation: body-glitch 0.3s infinite, HueShift 2s infinite;
+            background-color: var(--dark-bg) !important;
         }
 
         body.analyzing-state {
@@ -44,7 +43,7 @@
             background-image: 
                 radial-gradient(circle at 50% 50%, rgba(255, 170, 0, 0.15) 0%, transparent 80%),
                 linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
-            animation: pulse-amber 1s infinite alternate, body-glitch 4s infinite;
+            animation: pulse-amber 1s infinite alternate;
         }
 
         body.error-state {
@@ -52,15 +51,13 @@
             background-image: 
                 radial-gradient(circle at 50% 50%, rgba(255, 51, 51, 0.15) 0%, transparent 80%),
                 linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
-            animation: body-glitch 0.5s infinite;
         }
 
-        /* 時計メーター */
         .system-clock {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 0.9rem;
+            top: 30px;
+            right: 30px;
+            font-size: 1.35rem;
             letter-spacing: 1px;
             text-align: right;
             color: var(--neon-blue);
@@ -71,29 +68,21 @@
         }
 
         body.time-hacked-state .system-clock {
-            animation: text-glitch 0.5s infinite;
-            color: #ff00ff;
+            color: var(--neon-purple);
         }
 
-        /* 同期中にメーター自体が上下に激しくズレるエフェクト */
-        .system-clock.sync-jitter {
-            animation: clock-vertical-jitter 0.08s infinite !important;
-        }
-
-        /* 縦リール用の枠 */
         .clock-digit-slot {
             display: inline-block;
-            height: 1.2rem;
+            height: 1.8rem;
             overflow: hidden;
             position: relative;
             vertical-align: top;
-            width: 10px; 
+            width: 16px; 
             text-align: center;
         }
         
-        /* 年（4桁）が絶対に切れない幅(42px) */
         .clock-digit-slot.wide {
-            width: 42px; 
+            width: 64px; 
         }
 
         .clock-digit-reel {
@@ -101,80 +90,78 @@
             top: 0;
             left: 0;
             width: 100%;
-            transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1);
             display: flex;
             flex-direction: column;
         }
 
         .clock-digit-reel span {
             display: block;
-            height: 1.2rem;
-            line-height: 1.2rem;
-        }
-
-        /* 高速縦スクロール（ブレ） */
-        .clock-digit-reel.spinning {
-            transition: transform 0.04s linear !important; 
-            filter: blur(1px); 
+            height: 1.8rem;
+            line-height: 1.8rem;
         }
 
         .container {
             background: var(--panel-bg);
-            padding: 40px;
-            border-radius: 12px;
+            padding: 60px;
+            border-radius: 18px;
             border: 1px solid var(--neon-green);
-            box-shadow: 0 0 20px rgba(0, 255, 102, 0.2);
+            box-shadow: 0 0 30px rgba(0, 255, 102, 0.2);
             text-align: center;
-            max-width: 430px;
+            max-width: 660px; 
             width: 100%;
             box-sizing: border-box;
             backdrop-filter: blur(5px);
             transition: all 0.3s ease;
         }
 
-        /* 同期中にコントロールパネルも縦揺れ */
-        .container.sync-jitter {
-            animation: panel-vertical-jitter 0.06s infinite !important;
-        }
-
         body.time-hacked-state .container {
-            border-color: #ff00ff !important;
-            box-shadow: 0 0 25px rgba(255, 0, 255, 0.5) !important;
+            border-color: var(--neon-purple) !important;
+            box-shadow: 0 0 25px rgba(255, 0, 255, 0.4) !important;
         }
 
         .container.analyzing-panel {
             border-color: var(--neon-amber) !important;
-            box-shadow: 0 0 30px rgba(255, 170, 0, 0.5) !important;
+            box-shadow: 0 0 45px rgba(255, 170, 0, 0.5) !important;
         }
 
         .container.error-panel {
             border-color: var(--neon-red) !important;
-            box-shadow: 0 0 30px rgba(255, 51, 51, 0.6) !important;
+            box-shadow: 0 0 45px rgba(255, 51, 51, 0.6) !important;
+        }
+
+        /* SUCCESSしたとき、文字の緑色と統一感を持たせる設定 */
+        .container.success-panel {
+            border-color: var(--neon-green) !important;
+            box-shadow: 0 0 45px rgba(0, 255, 102, 0.4) !important;
         }
 
         h1 {
-            font-size: 1.4rem;
-            margin-bottom: 30px;
+            font-size: 2.1rem;
+            margin-bottom: 45px;
             letter-spacing: 2px;
             text-shadow: 0 0 8px var(--neon-green);
             text-transform: uppercase;
         }
 
+        .glitch-text-active {
+            animation: text-glitch-irregular 4s infinite;
+        }
+
         .input-group {
-            margin-bottom: 25px;
+            margin-bottom: 35px;
             position: relative;
         }
 
         input[type="text"] {
             width: 100%;
-            padding: 12px;
+            padding: 18px;
             background: rgba(0, 0, 0, 0.5);
             border: 1px solid rgba(0, 255, 102, 0.5);
-            border-radius: 6px;
+            border-radius: 9px;
             color: #fff;
-            font-size: 1.2rem;
+            font-size: 1.8rem;
             text-align: center;
-            letter-spacing: 4px;
+            letter-spacing: 6px;
             box-sizing: border-box;
             outline: none;
             transition: all 0.3s ease;
@@ -182,20 +169,27 @@
 
         input[type="text"]:focus {
             border-color: var(--neon-green);
-            box-shadow: 0 0 10px rgba(0, 255, 102, 0.5);
+            box-shadow: 0 0 15px rgba(0, 255, 102, 0.5);
+        }
+
+        body.time-hacked-state input[type="text"] {
+            border-color: rgba(255, 0, 255, 0.6) !important;
+        }
+        body.time-hacked-state input[type="text"]:focus {
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.5) !important;
         }
 
         button {
             background: transparent;
             border: 1px solid var(--neon-green);
             color: var(--neon-green);
-            padding: 12px 30px;
-            font-size: 1rem;
+            padding: 18px 45px;
+            font-size: 1.5rem;
             font-family: inherit;
             cursor: pointer;
-            border-radius: 6px;
+            border-radius: 9px;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 3px;
             transition: all 0.3s;
             width: 100%;
         }
@@ -203,20 +197,30 @@
         button:hover {
             background: var(--neon-green);
             color: var(--dark-bg);
-            box-shadow: 0 0 15px var(--neon-green);
+            box-shadow: 0 0 20px var(--neon-green);
             font-weight: bold;
+        }
+
+        body.time-hacked-state button {
+            border-color: var(--neon-purple) !important;
+            color: var(--neon-purple) !important;
+        }
+        body.time-hacked-state button:hover {
+            background: var(--neon-purple) !important;
+            color: #fff !important;
+            box-shadow: 0 0 20px var(--neon-purple) !important;
         }
 
         button.btn-retry {
             border-color: var(--neon-red);
             color: var(--neon-red);
-            margin-top: 20px;
+            margin-top: 30px;
         }
 
         button.btn-retry:hover {
             background: var(--neon-red);
             color: #fff;
-            box-shadow: 0 0 15px var(--neon-red);
+            box-shadow: 0 0 20px var(--neon-red);
         }
 
         .screen {
@@ -230,33 +234,33 @@
         .analyzing-title {
             color: var(--neon-amber);
             text-shadow: 0 0 10px var(--neon-amber);
-            font-size: 1.3rem;
+            font-size: 1.95rem;
             font-weight: bold;
-            margin-bottom: 25px;
+            margin-bottom: 35px;
             letter-spacing: 1px;
+            animation: text-glitch-irregular 2.5s infinite;
         }
 
-        /* 同期中専用画面のスタイル */
         .syncing-title {
-            color: #ff00ff;
-            text-shadow: 0 0 12px #ff00ff;
-            font-size: 1.3rem;
+            color: var(--neon-purple);
+            text-shadow: 0 0 12px var(--neon-purple);
+            font-size: 1.95rem;
             font-weight: bold;
-            margin-bottom: 15px;
+            margin-bottom: 22px;
             letter-spacing: 2px;
             animation: blink 0.3s infinite;
         }
         
         .sync-terminal {
             background: rgba(0,0,0,0.7);
-            border: 1px solid #ff00ff;
-            border-radius: 6px;
-            padding: 15px;
-            font-size: 0.8rem;
+            border: 1px solid var(--neon-purple);
+            border-radius: 9px;
+            padding: 22px;
+            font-size: 1.2rem;
             color: #ffb3ff;
             text-align: left;
             line-height: 1.6;
-            margin-bottom: 15px;
+            margin-bottom: 22px;
             box-shadow: inset 0 0 10px rgba(255, 0, 255, 0.2);
         }
 
@@ -264,10 +268,10 @@
             width: 100%;
             background: rgba(0,0,0,0.5);
             border: 1px solid var(--neon-amber);
-            height: 20px;
-            border-radius: 10px;
+            height: 30px;
+            border-radius: 15px;
             overflow: hidden;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
 
         .scan-bar {
@@ -279,54 +283,60 @@
         }
 
         .percentage {
-            font-size: 2rem;
+            font-size: 3rem;
             color: #fff;
             font-weight: bold;
             text-shadow: 0 0 10px var(--neon-amber);
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
 
         .error-title {
             color: var(--neon-red);
             text-shadow: 0 0 10px var(--neon-red);
-            font-size: 1.5rem;
+            font-size: 2.25rem;
             font-weight: bold;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
             letter-spacing: 2px;
-            animation: blink 0.6s infinite;
+            animation: text-glitch-irregular 1.8s infinite;
         }
 
         .error-details {
             color: #ffcccc;
-            font-size: 0.85rem;
-            line-height: 1.6;
+            font-size: 1.25rem;
+            line-height: 1.7;
             background: rgba(255, 0, 0, 0.1);
             border: 1px dashed var(--neon-red);
-            padding: 15px;
+            padding: 22px;
             text-align: left;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+            white-space: normal;
+            word-break: keep-all;
         }
 
         .success-title {
             color: #fff;
             text-shadow: 0 0 15px var(--neon-green), 0 0 30px var(--neon-green);
-            font-size: 1.6rem;
-            margin-bottom: 20px;
-            animation: blink 1.2s infinite;
+            font-size: 2.4rem;
+            margin-bottom: 30px;
+        }
+
+        p {
+            font-size: 1.35rem;
+            line-height: 1.6;
         }
 
         .status-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 15px;
             text-align: left;
-            margin-top: 20px;
-            font-size: 0.9rem;
+            margin-top: 30px;
+            font-size: 1.35rem;
         }
 
         .status-item {
             border: 1px solid rgba(0, 255, 102, 0.3);
-            padding: 10px;
+            padding: 15px;
             background: rgba(0, 0, 0, 0.3);
         }
 
@@ -348,55 +358,36 @@
             to { background-color: #1a1100; }
         }
 
-        /* メーター縦ズレ */
-        @keyframes clock-vertical-jitter {
-            0%, 100% { transform: translateY(0); }
-            20% { transform: translateY(-7px) skewX(1deg); }
-            40% { transform: translateY(6px); }
-            60% { transform: translateY(-4px); }
-            80% { transform: translateY(5px) skewX(-1deg); }
-        }
-
-        /* パネル縦ズレ */
-        @keyframes panel-vertical-jitter {
-            0%, 100% { transform: translateY(0); }
-            25% { transform: translateY(4px); }
-            50% { transform: translateY(-5px); }
-            75% { transform: translateY(3px); }
-        }
-
-        @keyframes text-glitch {
-            0%, 85%, 89%, 93%, 100% {
+        @keyframes text-glitch-irregular {
+            0%, 70%, 74%, 78%, 82%, 95%, 100% {
                 transform: translate(0, 0) skew(0deg);
                 filter: hue-rotate(0deg);
-                text-shadow: 0 0 10px currentColor;
+                text-shadow: 0 0 8px currentColor;
             }
-            86% {
-                transform: translate(-4px, 2px) skew(-5deg);
-                text-shadow: 3px -2px var(--neon-blue), -3px 2px var(--neon-red);
+            71% {
+                transform: translate(-4px, 1px) skew(-4deg);
+                text-shadow: 2px -2px var(--neon-blue), -2px 2px var(--neon-red);
             }
-            88% {
-                transform: translate(3px, -2px) skew(3deg);
-                text-shadow: -3px 3px var(--neon-blue), 3px -2px var(--neon-red);
+            73% {
+                transform: translate(3px, -1px) skew(2deg);
+                text-shadow: -2px 2px var(--neon-blue), 2px -2px var(--neon-red);
             }
-            90% { transform: translate(-2px, -1px) skew(2deg); }
-            92% { text-shadow: 3px 2px var(--neon-amber), -3px -2px var(--neon-blue); }
-        }
-
-        @keyframes body-glitch {
-            0%, 92%, 96%, 100% { transform: translate(0, 0); }
-            93% { transform: translate(-3px, 2px); filter: brightness(1.2); }
-            95% { transform: translate(3px, -2px); }
-            97% { transform: translate(-2px, -3px); filter: contrast(1.5); }
-        }
-
-        @keyframes HueShift {
-            0%, 100% { filter: hue-rotate(0deg); }
-            50% { filter: hue-rotate(30deg); }
+            79% { transform: translate(-2px, 0px) skew(1deg); }
+            81% { text-shadow: 2px 1px var(--neon-amber), -2px -1px var(--neon-blue); }
+            96% {
+                transform: translate(4px, -2px) skew(5deg);
+                text-shadow: -3px 2px var(--neon-purple), 3px -1px var(--neon-green);
+            }
+            98% {
+                transform: translate(-3px, 2px) skew(-3deg);
+            }
         }
     </style>
 </head>
 <body>
+
+    <audio id="snd-success" src="success.m4a" preload="auto"></audio>
+    <audio id="snd-error" src="error.m4a" preload="auto"></audio>
 
     <div class="system-clock" id="main-clock-element">
         SYS_TIME:&nbsp;
@@ -416,21 +407,21 @@
     <div class="container" id="panel">
         
         <div id="lock-screen" class="screen active">
-            <h1 id="main-title">Time Matrix Monitor<br><span style="font-size: 0.8rem; color: #fff;">時空監視・現実時間同期盤</span></h1>
+            <h1 id="main-title" class="glitch-text-active">TIME MACHINE<br><span style="font-size: 1.2rem; color: #fff; letter-spacing: 1px;">タイムマシン起動</span></h1>
             <div class="input-group">
-                <input type="text" id="password" placeholder="ENTER SYNC CODE" autocomplete="off">
+                <input type="text" id="password" placeholder="ENTER CODE" autocomplete="off">
             </div>
-            <button id="action-btn" onclick="startAnalysis()">同期プロトコル起動</button>
+            <button id="action-btn" onclick="startAnalysis()">タイムマシンを起動する</button>
         </div>
 
         <div id="analyzing-screen" class="screen">
-            <div class="analyzing-title">SYNCHRONIZING TIME CORE...</div>
+            <div class="analyzing-title">RESYNCHRONIZING SYSTEM TIME...</div>
             <div class="percentage" id="percent-text">0%</div>
             <div class="scan-bar-container">
                 <div class="scan-bar" id="scan-progress"></div>
             </div>
-            <div style="font-size: 0.8rem; color: var(--neon-amber); letter-spacing: 1px;">
-                止まった時空連続体を現実時間へ再固定中...
+            <div style="font-size: 1.1rem; color: var(--neon-amber); letter-spacing: 1px;">
+                現在時刻へ同調中...
             </div>
         </div>
 
@@ -442,25 +433,25 @@
                 >> PULLING TEMPORAL AXIS BACK TO REALITY<br>
                 >> STATUS: RE-STABILIZING CHRONO DRIVE
             </div>
-            <div style="font-size: 0.85rem; color: #ff00ff; letter-spacing: 2px; font-weight: bold;">
-                現実時間への強制回帰シーケンス実行中...
+            <div style="font-size: 1.2rem; color: var(--neon-purple); letter-spacing: 2px; font-weight: bold;">
+                時間軸の整合性を修正中...
             </div>
         </div>
 
         <div id="error-screen" class="screen">
-            <div class="error-title">CHRONO LOCKOUT</div>
+            <div class="error-title">ERROR</div>
             <div class="error-details">
                 [CRITICAL ERROR]<br>
                 CODE: SYNC_KEY_MISMATCH<br>
                 STATUS: TIME FREEZE CONTINUED<br>
-                復旧コードが拒否されました。時間は停止したままです。
+                コードが拒否されました。時間は停止したままです。
             </div>
             <button class="btn-retry" onclick="resetSystem()">システム再起動 (RETRY)</button>
         </div>
 
         <div id="success-screen" class="screen">
-            <div class="success-title">CHRONO RECOVERY SUCCESS</div>
-            <p>時空歪曲の修正が完了し、現実時間(REAL TIME)への回帰が承認されました。</p>
+            <div class="success-title">SUCCESS</div>
+            <p>タイムマシンの起動に成功しました。</p>
             
             <div class="status-grid">
                 <div class="status-item"><span class="label">STATUS:</span><br><span class="value" style="color: #00ff66;">SYNCED</span></div>
@@ -480,21 +471,16 @@
         let isTimeRunning = true;       
         let isSyncingTime = false;      
         let customTargetDate = null;    
+        let isAnalyzing = false;        
 
-        // 【新設】同一フォルダ内のオーディオファイルを定義
-        let audioSuccess = new Audio('success.m4a');
-        let audioError = new Audio('error.m4a');
+        const audioSuccess = document.getElementById('snd-success');
+        const audioError = document.getElementById('snd-error');
 
         function setupReels() {
             const numReels = ['month1', 'month2', 'day1', 'day2', 'hour1', 'hour2', 'min1', 'min2', 'sec1', 'sec2'];
             numReels.forEach(id => {
                 const reel = document.getElementById(`reel-${id}`);
-                reel.innerHTML = '';
-                for(let i=0; i<=9; i++) {
-                    const span = document.createElement('span');
-                    span.textContent = i;
-                    reel.appendChild(span);
-                }
+                if (reel) reel.innerHTML = '<span>0</span>';
             });
         }
         setupReels();
@@ -508,19 +494,26 @@
             const ss = String(dateObj.getSeconds()).padStart(2, '0');
 
             const reelYear = document.getElementById('reel-year');
-            reelYear.innerHTML = `<span>${yyyy}</span>`;
+            if (reelYear) reelYear.innerHTML = `<span>${yyyy}</span>`;
 
-            const remUnit = 1.2;
-            document.getElementById('reel-month1').style.transform = `translateY(-${mm[0] * remUnit}rem)`;
-            document.getElementById('reel-month2').style.transform = `translateY(-${mm[1] * remUnit}rem)`;
-            document.getElementById('reel-day1').style.transform   = `translateY(-${dd[0] * remUnit}rem)`;
-            document.getElementById('reel-day2').style.transform   = `translateY(-${dd[1] * remUnit}rem)`;
-            document.getElementById('reel-hour1').style.transform  = `translateY(-${hh[0] * remUnit}rem)`;
-            document.getElementById('reel-hour2').style.transform  = `translateY(-${hh[1] * remUnit}rem)`;
-            document.getElementById('reel-min1').style.transform   = `translateY(-${min[0] * remUnit}rem)`;
-            document.getElementById('reel-min2').style.transform   = `translateY(-${min[1] * remUnit}rem)`;
-            document.getElementById('reel-sec1').style.transform   = `translateY(-${ss[0] * remUnit}rem)`;
-            document.getElementById('reel-sec2').style.transform   = `translateY(-${ss[1] * remUnit}rem)`;
+            const setDigit = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) {
+                    const span = el.querySelector('span');
+                    if (span) span.textContent = val;
+                }
+            };
+
+            setDigit('reel-month1', mm[0]);
+            setDigit('reel-month2', mm[1]);
+            setDigit('reel-day1', dd[0]);
+            setDigit('reel-day2', dd[1]);
+            setDigit('reel-hour1', hh[0]);
+            setDigit('reel-hour2', hh[1]);
+            setDigit('reel-min1', min[0]);
+            setDigit('reel-min2', min[1]);
+            setDigit('reel-sec1', ss[0]);
+            setDigit('reel-sec2', ss[1]);
 
             const successDate = document.getElementById('success-date');
             const successTime = document.getElementById('success-time');
@@ -562,7 +555,7 @@
                 const baseDate = (isTimeHacked && customTargetDate) ? customTargetDate : new Date();
                 const defaultString = getFormattedDateTimeString(baseDate);
 
-                const input = prompt("【時空連続体・改変パラメータ設定】\n任意の時間を指定し、時空をフリーズさせます:", defaultString);
+                const input = prompt("【パラメータ設定】任意の時間を指定し、時空を停止させます:", defaultString);
                 
                 if (input) {
                     const parsedDate = new Date(input);
@@ -575,9 +568,17 @@
                         document.body.classList.add('time-hacked-state');
                         renderClock(customTargetDate);
 
-                        document.getElementById('main-title').innerHTML = `[WARNING] TIME CORRUPTION DETECTED<br><span style="font-size: 0.8rem; color: #ff3333; font-weight: bold;">STATUS: TIME STOPPED (時間停止状態)</span>`;
-                        document.getElementById('action-btn').textContent = "現実時間への強制復旧";
-                        document.getElementById('password').placeholder = "ENTER RESET CODE";
+                        const mainTitle = document.getElementById('main-title');
+                        const actionBtn = document.getElementById('action-btn');
+                        const passwordInput = document.getElementById('password');
+
+                        // 「時間停止中」の文字も赤色(var(--neon-red))に統一
+                        if (mainTitle) {
+                            mainTitle.className = "glitch-text-active";
+                            mainTitle.innerHTML = `<span style="color: var(--neon-red); text-shadow: 0 0 10px var(--neon-red);">[WARNING] TIME STOPPED</span><br><span style="font-size: 1.2rem; color: var(--neon-red); font-weight: bold; letter-spacing: 1px; text-shadow: 0 0 8px var(--neon-red);">時間停止中</span>`;
+                        }
+                        if (actionBtn) actionBtn.textContent = "タイムマシンを起動する";
+                        if (passwordInput) passwordInput.placeholder = "ENTER CODE";
                     } else {
                         alert("ERROR: 不正な日時フォーマットです。");
                     }
@@ -595,12 +596,8 @@
         }
 
         function startAnalysis() {
-            // ブラウザのサウンドセキュリティロック解除＆ファイルを事前読み込み
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            audioSuccess.load();
-            audioError.load();
+            if (isAnalyzing) return; 
+            isAnalyzing = true;
 
             const lockScreen = document.getElementById('lock-screen');
             const analyzingScreen = document.getElementById('analyzing-screen');
@@ -608,18 +605,38 @@
             const percentText = document.getElementById('percent-text');
             const scanProgress = document.getElementById('scan-progress');
 
-            lockScreen.classList.remove('active');
-            analyzingScreen.classList.add('active');
+            if (lockScreen) lockScreen.classList.remove('active');
+            if (analyzingScreen) analyzingScreen.classList.add('active');
             document.body.classList.add('analyzing-state');
-            panel.classList.add('analyzing-panel');
+            if (panel) panel.classList.add('analyzing-panel');
+
+            if (audioSuccess && audioError) {
+                audioSuccess.muted = true;
+                audioSuccess.play().then(() => {
+                    audioSuccess.pause();
+                    audioSuccess.muted = false;
+                }).catch(e => console.log("AudioSuccess unlock handled:", e));
+
+                audioError.muted = true;
+                audioError.play().then(() => {
+                    audioError.pause();
+                    audioError.muted = false;
+                }).catch(e => console.log("AudioError unlock handled:", e));
+            }
+
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            } catch (e) { }
 
             let currentPercent = 0;
 
             function processNextStep() {
                 if (currentPercent >= 100) {
                     currentPercent = 100;
-                    percentText.textContent = "100%";
-                    scanProgress.style.width = "100%";
+                    if (percentText) percentText.textContent = "100%";
+                    if (scanProgress) scanProgress.style.width = "100%";
                     setTimeout(verifyCode, 400);
                     return;
                 }
@@ -634,44 +651,35 @@
 
                 currentPercent += progressIncrement;
                 if (currentPercent > 100) currentPercent = 100;
-                percentText.textContent = currentPercent + "%";
-                scanProgress.style.width = currentPercent + "%";
+                if (percentText) percentText.textContent = currentPercent + "%";
+                if (scanProgress) scanProgress.style.width = currentPercent + "%";
 
                 setTimeout(processNextStep, nextDelay);
             }
             setTimeout(processNextStep, 100);
         }
 
-        // 同期中のカチカチ音用の軽量WebAudio
         function playTickBeep() {
             if (!audioCtx || audioCtx.state === 'suspended') return;
-            const osc = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            osc.type = 'square';
-            osc.frequency.setValueAtTime(1400, audioCtx.currentTime);
-            gainNode.gain.setValueAtTime(0.04, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.02);
-            osc.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.02);
+            try {
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(1400, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.04, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.02);
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.02);
+            } catch (e) { }
         }
 
-        // 縦リールスロット ＋ 縦方向の物理的なズレ・揺れエフェクト同期
         function syncToPresentTime(callback) {
             isSyncingTime = true;
             
-            const clockEl = document.getElementById('main-clock-element');
-            const panelEl = document.getElementById('panel');
             const syncingScreen = document.getElementById('syncing-screen');
-
-            syncingScreen.classList.add('active');
-
-            const reels = document.querySelectorAll('.clock-digit-reel');
-            reels.forEach(r => r.classList.add('spinning'));
-
-            clockEl.classList.add('sync-jitter');
-            panelEl.classList.add('sync-jitter');
+            if (syncingScreen) syncingScreen.classList.add('active');
 
             let durationCounter = 0;
             const totalSteps = 45; 
@@ -684,26 +692,27 @@
                     isTimeRunning = true;
                     isSyncingTime = false;
 
-                    reels.forEach(r => r.classList.remove('spinning'));
-                    clockEl.classList.remove('sync-jitter');
-                    panelEl.classList.remove('sync-jitter');
-                    syncingScreen.classList.remove('active');
+                    if (syncingScreen) syncingScreen.classList.remove('active');
                     
                     renderClock(new Date()); 
                     callback(); 
                     return;
                 }
 
-                const remUnit = 1.2;
-                document.getElementById('reel-year').innerHTML = `<span>${Math.floor(Math.random() * 9000 + 1000)}</span>`;
+                const reelYear = document.getElementById('reel-year');
+                if (reelYear) reelYear.innerHTML = `<span>${Math.floor(Math.random() * 9000 + 1000)}</span>`;
                 
                 const targets = ['month1', 'month2', 'day1', 'day2', 'hour1', 'hour2', 'min1', 'min2', 'sec1', 'sec2'];
                 targets.forEach(id => {
                     const randomDigit = Math.floor(Math.random() * 10);
-                    document.getElementById(`reel-${id}`).style.transform = `translateY(-${randomDigit * remUnit}rem)`;
+                    const el = document.getElementById(`reel-${id}`);
+                    if (el) {
+                        const span = el.querySelector('span');
+                        if (span) span.textContent = randomDigit;
+                    }
                 });
 
-                playTickBeep(); // 同期中のカチカチ音
+                playTickBeep(); 
                 setTimeout(spinStep, 35);
             }
 
@@ -711,51 +720,59 @@
         }
 
         function verifyCode() {
+            isAnalyzing = false; 
+
             const passwordInput = document.getElementById('password');
-            const input = passwordInput.value;
+            const input = passwordInput ? passwordInput.value : "";
             
             const analyzingScreen = document.getElementById('analyzing-screen');
             const errorScreen = document.getElementById('error-screen');
             const successScreen = document.getElementById('success-screen');
             const panel = document.getElementById('panel');
 
-            analyzingScreen.classList.remove('active');
+            if (analyzingScreen) analyzingScreen.classList.remove('active');
             document.body.classList.remove('analyzing-state');
-            panel.classList.remove('analyzing-panel');
+            if (panel) panel.classList.remove('analyzing-panel');
 
             if (checkPassword(input)) {
                 document.body.classList.remove('time-hacked-state');
 
                 if (isTimeHacked && customTargetDate) {
                     syncToPresentTime(() => {
-                        successScreen.classList.add('active');
+                        if (successScreen) successScreen.classList.add('active');
+                        // 成功時に枠線を緑色クラスにする
+                        if (panel) panel.classList.add('success-panel');
                         document.body.style.backgroundColor = '#003311';
                         
-                        // 【変更】用意された success.m4a を再生
-                        audioSuccess.currentTime = 0;
-                        audioSuccess.play().catch(e => console.log("Audio play blocked:", e));
+                        if (audioSuccess) {
+                            audioSuccess.currentTime = 0;
+                            audioSuccess.play().catch(e => console.log("Audio play blocked:", e));
+                        }
 
                         setTimeout(() => { document.body.style.backgroundColor = '#0a0e14'; }, 200);
                     });
                 } else {
                     isTimeRunning = true;
-                    successScreen.classList.add('active');
+                    if (successScreen) successScreen.classList.add('active');
+                    if (panel) panel.classList.add('success-panel');
                     document.body.style.backgroundColor = '#003311';
                     
-                    // 【変更】通常解除時も success.m4a を再生
-                    audioSuccess.currentTime = 0;
-                    audioSuccess.play().catch(e => console.log("Audio play blocked:", e));
+                    if (audioSuccess) {
+                        audioSuccess.currentTime = 0;
+                        audioSuccess.play().catch(e => console.log("Audio play blocked:", e));
+                    }
 
                     setTimeout(() => { document.body.style.backgroundColor = '#0a0e14'; }, 200);
                 }
             } else {
-                errorScreen.classList.add('active');
+                if (errorScreen) errorScreen.classList.add('active');
                 document.body.classList.add('error-state');
-                panel.classList.add('error-panel');
+                if (panel) panel.classList.add('error-panel');
 
-                // 【変更】用意された error.m4a を再生
-                audioError.currentTime = 0;
-                audioError.play().catch(e => console.log("Audio play blocked:", e));
+                if (audioError) {
+                    audioError.currentTime = 0;
+                    audioError.play().catch(e => console.log("Audio play blocked:", e));
+                }
             }
         }
 
@@ -767,22 +784,30 @@
             const percentText = document.getElementById('percent-text');
             const scanProgress = document.getElementById('scan-progress');
 
-            errorScreen.classList.remove('active');
-            lockScreen.classList.add('active');
+            if (errorScreen) errorScreen.classList.remove('active');
+            if (lockScreen) lockScreen.classList.add('active');
             
             document.body.classList.remove('error-state');
-            panel.classList.remove('error-panel');
+            if (panel) {
+                panel.classList.remove('error-panel');
+                panel.classList.remove('success-panel'); // 成功枠のリセット
+            }
             
-            percentText.textContent = "0%";
-            scanProgress.style.width = "0%";
+            if (percentText) percentText.textContent = "0%";
+            if (scanProgress) scanProgress.style.width = "0%";
 
-            passwordInput.value = "";
-            passwordInput.focus();
+            if (passwordInput) {
+                passwordInput.value = "";
+                passwordInput.focus();
+            }
         }
 
-        document.getElementById('password').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') startAnalysis();
-        });
+        const passwordField = document.getElementById('password');
+        if (passwordField) {
+            passwordField.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') startAnalysis();
+            });
+        }
     </script>
 </body>
 </html>
