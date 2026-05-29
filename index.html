@@ -33,6 +33,12 @@
             transition: background-color 0.3s ease;
         }
 
+        /* === 【新設】時空改変ノイズ：コマンド入力後に画面全体がガクつく === */
+        body.time-hacked-state {
+            background-color: #071410 !important;
+            animation: body-glitch 0.3s infinite, HueShift 2s infinite;
+        }
+
         body.analyzing-state {
             background-color: #120c00 !important;
             background-image: 
@@ -61,6 +67,12 @@
             opacity: 0.9;
         }
 
+        /* === 【新設】時空改変時の時計ノイズ === */
+        body.time-hacked-state .system-clock {
+            animation: text-glitch 0.5s infinite;
+            color: #ff00ff;
+        }
+
         .container {
             background: var(--panel-bg);
             padding: 40px;
@@ -73,6 +85,12 @@
             box-sizing: border-box;
             backdrop-filter: blur(5px);
             transition: all 0.3s ease;
+        }
+
+        /* 時空改変時はパネルの影も怪しく光る */
+        body.time-hacked-state .container {
+            border-color: #ff00ff !important;
+            box-shadow: 0 0 25px rgba(255, 0, 255, 0.5) !important;
         }
 
         .container.analyzing-panel {
@@ -291,18 +309,15 @@
         }
 
         @keyframes body-glitch {
-            0%, 92%, 96%, 100% {
-                transform: translate(0, 0);
-            }
-            93% {
-                transform: translate(-2px, 2px);
-            }
-            95% {
-                transform: translate(3px, -1px);
-            }
-            97% {
-                transform: translate(-1px, -3px);
-            }
+            0%, 92%, 96%, 100% { transform: translate(0, 0); }
+            93% { transform: translate(-3px, 2px); filter: brightness(1.2); }
+            95% { transform: translate(3px, -2px); }
+            97% { transform: translate(-2px, -3px); filter: contrast(1.5); }
+        }
+
+        @keyframes HueShift {
+            0%, 100% { filter: hue-rotate(0deg); }
+            50% { filter: hue-rotate(30deg); }
         }
     </style>
 </head>
@@ -361,21 +376,24 @@
     <script>
         const ENCRYPTED_PASSWORD = [50, 48, 50, 54]; 
 
-        // === 【追加】オーディオファイルの定義 ===
-        // 同一ディレクトリ内のファイルを指定
         const audioSuccess = new Audio('success.m4a');
         const audioError = new Audio('error.m4a');
 
-        function updateClock() {
-            const now = new Date();
-            const yyyy = now.getFullYear();
-            const mm = String(now.getMonth() + 1).padStart(2, '0');
-            const dd = String(now.getDate()).padStart(2, '0');
+        // === 時空改変管理用の変数 ===
+        let isTimeHacked = false;       // コマンドで時刻が書き換えられたか
+        let isTimeRunning = true;       // 時計が動いているか
+        let customTargetDate = null;    // 書き換えられたターゲット日時(Dateオブジェクト)
+
+        // 時計描画用関数
+        function renderClock(targetDate) {
+            const yyyy = targetDate.getFullYear();
+            const mm = String(targetDate.getMonth() + 1).padStart(2, '0');
+            const dd = String(targetDate.getDate()).padStart(2, '0');
             const dateStr = `${yyyy}/${mm}/${dd}`;
             
-            const hh = String(now.getHours()).padStart(2, '0');
-            const min = String(now.getMinutes()).padStart(2, '0');
-            const ss = String(now.getSeconds()).padStart(2, '0');
+            const hh = String(targetDate.getHours()).padStart(2, '0');
+            const min = String(targetDate.getMinutes()).padStart(2, '0');
+            const ss = String(targetDate.getSeconds()).padStart(2, '0');
             const timeStr = `${hh}:${min}:${ss}`;
 
             document.getElementById('sys-date').textContent = dateStr;
@@ -388,8 +406,55 @@
                 successTime.textContent = timeStr;
             }
         }
+
+        // 毎秒呼び出されるメインクロック処理
+        function updateClock() {
+            if (!isTimeRunning) {
+                // 時計停止状態なら表示更新処理をスキップ（止まったままにする）
+                return;
+            }
+
+            if (isTimeHacked && customTargetDate) {
+                // ハックが成功して動き出すフェーズ：保持している仮想時刻を1秒進めて描画
+                customTargetDate.setSeconds(customTargetDate.getSeconds() + 1);
+                renderClock(customTargetDate);
+            } else {
+                // 通常状態：現在時刻を描画
+                const now = new Date();
+                renderClock(now);
+            }
+        }
         setInterval(updateClock, 1000);
         updateClock();
+
+
+        // === 【新設】隠しコマンドイベントリスナー (Ctrl + Alt + Shift + C) ===
+        window.addEventListener('keydown', function(e) {
+            // Ctrl, Alt, Shift がすべて押され、かつキーが 'c' または 'C' の場合
+            if (e.ctrlKey && e.altKey && e.shiftKey && (e.key === 'c' || e.key === 'C')) {
+                e.preventDefault();
+
+                const input = prompt("【時空連続体干渉プロトコル】\n設定したい日時を入力してください:\n(フォーマット例: 1955/11/12 22:04:00)");
+                
+                if (input) {
+                    const parsedDate = new Date(input);
+                    // 正しい日時形式かバリデーション
+                    if (!isNaN(parsedDate.getTime())) {
+                        customTargetDate = parsedDate;
+                        isTimeHacked = true;
+                        isTimeRunning = false; // 時計をピタッと停止させる
+
+                        // 画面全体に時空改変ノイズ用クラスを付与
+                        document.body.classList.add('time-hacked-state');
+                        
+                        // 停止した日時を即時反映
+                        renderClock(customTargetDate);
+                    } else {
+                        alert("ERROR: 不正な日時フォーマットです。");
+                    }
+                }
+            }
+        });
 
 
         function checkPassword(inputStr) {
@@ -428,13 +493,10 @@
                 }
 
                 let progressIncrement = Math.floor(Math.random() * 12);
-                
                 if (Math.random() < 0.15) {
                     progressIncrement = Math.floor(Math.random() * 15) + 10;
                 }
-
                 let nextDelay = Math.floor(Math.random() * 180) + 40; 
-
                 if (Math.random() < 0.12) {
                     progressIncrement = 0; 
                     nextDelay = Math.floor(Math.random() * 500) + 400; 
@@ -466,9 +528,12 @@
             panel.classList.remove('analyzing-panel');
 
             if (checkPassword(input)) {
-                // === 【変更】成功音の再生 ===
-                audioSuccess.currentTime = 0; // 連続で呼ばれた時のために最初に戻す
+                audioSuccess.currentTime = 0;
                 audioSuccess.play().catch(e => console.log("Audio play prevented:", e));
+
+                // === 成功時の処理：ノイズを止め、時計を再稼働 ===
+                document.body.classList.remove('time-hacked-state');
+                isTimeRunning = true; // 動き出す
 
                 successScreen.classList.add('active');
                 document.body.style.backgroundColor = '#003311';
@@ -476,10 +541,10 @@
                     document.body.style.backgroundColor = '#0a0e14';
                 }, 200);
             } else {
-                // === 【変更】失敗音の再生 ===
                 audioError.currentTime = 0;
                 audioError.play().catch(e => console.log("Audio play prevented:", e));
 
+                // 失敗時は時空改変ノイズは維持したままエラー状態を重ねる
                 errorScreen.classList.add('active');
                 document.body.classList.add('error-state');
                 panel.classList.add('error-panel');
@@ -494,7 +559,6 @@
             const percentText = document.getElementById('percent-text');
             const scanProgress = document.getElementById('scan-progress');
 
-            // リトライ時に前回の失敗音が鳴り続けていたら止める処理（必要に応じて）
             audioError.pause();
             audioError.currentTime = 0;
 
