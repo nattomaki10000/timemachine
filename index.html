@@ -33,7 +33,7 @@
             transition: background-color 0.3s ease;
         }
 
-        /* === 時空改変ノイズ：コマンド入力後に画面全体がガクつく === */
+        /* 時空改変ノイズ：コマンド入力後に画面全体がガクつく */
         body.time-hacked-state {
             background-color: #071410 !important;
             animation: body-glitch 0.3s infinite, HueShift 2s infinite;
@@ -55,7 +55,7 @@
             animation: body-glitch 0.5s infinite;
         }
 
-        /* === 時計を縦リールスロット化するためのベース構造 === */
+        /* 時計メーター */
         .system-clock {
             position: absolute;
             top: 20px;
@@ -75,12 +75,12 @@
             color: #ff00ff;
         }
 
-        /* 【新設】同期中にメーター自体が上下（縦）に激しくズレるエフェクト */
+        /* 同期中にメーター自体が上下に激しくズレるエフェクト */
         .system-clock.sync-jitter {
             animation: clock-vertical-jitter 0.08s infinite !important;
         }
 
-        /* スロットマシンのように縦に動かす1文字分の枠 */
+        /* 縦リール用の枠 */
         .clock-digit-slot {
             display: inline-block;
             height: 1.2rem;
@@ -91,7 +91,7 @@
             text-align: center;
         }
         
-        /* 【修正】年（4桁）が絶対に切れないよう、幅を「42px」に拡張 */
+        /* 年（4桁）が絶対に切れない幅(42px) */
         .clock-digit-slot.wide {
             width: 42px; 
         }
@@ -112,7 +112,7 @@
             line-height: 1.2rem;
         }
 
-        /* 縦に高速移動中（同期中）の演出用クラス */
+        /* 高速縦スクロール（ブレ） */
         .clock-digit-reel.spinning {
             transition: transform 0.04s linear !important; 
             filter: blur(1px); 
@@ -125,14 +125,14 @@
             border: 1px solid var(--neon-green);
             box-shadow: 0 0 20px rgba(0, 255, 102, 0.2);
             text-align: center;
-            max-width: 420px;
+            max-width: 430px;
             width: 100%;
             box-sizing: border-box;
             backdrop-filter: blur(5px);
             transition: all 0.3s ease;
         }
 
-        /* 同期中に中央のコントロールパネルも縦にガクガク揺れる */
+        /* 同期中にコントロールパネルも縦揺れ */
         .container.sync-jitter {
             animation: panel-vertical-jitter 0.06s infinite !important;
         }
@@ -153,9 +153,9 @@
         }
 
         h1 {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             margin-bottom: 30px;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
             text-shadow: 0 0 8px var(--neon-green);
             text-transform: uppercase;
         }
@@ -230,10 +230,34 @@
         .analyzing-title {
             color: var(--neon-amber);
             text-shadow: 0 0 10px var(--neon-amber);
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             font-weight: bold;
             margin-bottom: 25px;
+            letter-spacing: 1px;
+        }
+
+        /* 同期中専用画面のスタイル */
+        .syncing-title {
+            color: #ff00ff;
+            text-shadow: 0 0 12px #ff00ff;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 15px;
             letter-spacing: 2px;
+            animation: blink 0.3s infinite;
+        }
+        
+        .sync-terminal {
+            background: rgba(0,0,0,0.7);
+            border: 1px solid #ff00ff;
+            border-radius: 6px;
+            padding: 15px;
+            font-size: 0.8rem;
+            color: #ffb3ff;
+            text-align: left;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            box-shadow: inset 0 0 10px rgba(255, 0, 255, 0.2);
         }
 
         .scan-bar-container {
@@ -265,7 +289,7 @@
         .error-title {
             color: var(--neon-red);
             text-shadow: 0 0 10px var(--neon-red);
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             font-weight: bold;
             margin-bottom: 20px;
             letter-spacing: 2px;
@@ -286,7 +310,7 @@
         .success-title {
             color: #fff;
             text-shadow: 0 0 15px var(--neon-green), 0 0 30px var(--neon-green);
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             margin-bottom: 20px;
             animation: blink 1.2s infinite;
         }
@@ -324,7 +348,7 @@
             to { background-color: #1a1100; }
         }
 
-        /* === 【新設】時間を戻すとき、時計メーターが縦に激しくガクガクずれるアニメーション === */
+        /* メーター縦ズレ */
         @keyframes clock-vertical-jitter {
             0%, 100% { transform: translateY(0); }
             20% { transform: translateY(-7px) skewX(1deg); }
@@ -333,7 +357,7 @@
             80% { transform: translateY(5px) skewX(-1deg); }
         }
 
-        /* === 【新設】時間を戻すとき、パネル本体が縦に複雑にシェイクするアニメーション === */
+        /* パネル縦ズレ */
         @keyframes panel-vertical-jitter {
             0%, 100% { transform: translateY(0); }
             25% { transform: translateY(4px); }
@@ -392,44 +416,57 @@
     <div class="container" id="panel">
         
         <div id="lock-screen" class="screen active">
-            <h1>Time Machine<br><span style="font-size: 0.9rem; color: #fff;">コア起動システム</span></h1>
+            <h1 id="main-title">Time Matrix Monitor<br><span style="font-size: 0.8rem; color: #fff;">時空監視・現実時間同期盤</span></h1>
             <div class="input-group">
-                <input type="text" id="password" placeholder="ENTER CODE" autocomplete="off">
+                <input type="text" id="password" placeholder="ENTER SYNC CODE" autocomplete="off">
             </div>
-            <button onclick="startAnalysis()">システム解除</button>
+            <button id="action-btn" onclick="startAnalysis()">同期プロトコル起動</button>
         </div>
 
         <div id="analyzing-screen" class="screen">
-            <div class="analyzing-title">CODE ANALYZING...</div>
+            <div class="analyzing-title">SYNCHRONIZING TIME CORE...</div>
             <div class="percentage" id="percent-text">0%</div>
             <div class="scan-bar-container">
                 <div class="scan-bar" id="scan-progress"></div>
             </div>
             <div style="font-size: 0.8rem; color: var(--neon-amber); letter-spacing: 1px;">
-                タイムコアへの同調率を計算中...
+                止まった時空連続体を現実時間へ再固定中...
+            </div>
+        </div>
+
+        <div id="syncing-screen" class="screen">
+            <div class="syncing-title">⚠️ TIME DISTORTION BLOCKED</div>
+            <div class="sync-terminal">
+                >> [EMERGENCY] DISTORTION DETECTED<br>
+                >> TIMELINE RESYNCHRONIZING...<br>
+                >> PULLING TEMPORAL AXIS BACK TO REALITY<br>
+                >> STATUS: RE-STABILIZING CHRONO DRIVE
+            </div>
+            <div style="font-size: 0.85rem; color: #ff00ff; letter-spacing: 2px; font-weight: bold;">
+                現実時間への強制回帰シーケンス実行中...
             </div>
         </div>
 
         <div id="error-screen" class="screen">
-            <div class="error-title">SYSTEM FAILURE</div>
+            <div class="error-title">CHRONO LOCKOUT</div>
             <div class="error-details">
                 [CRITICAL ERROR]<br>
-                CODE: INVALID_TIME_KEY<br>
-                STATUS: TEMPORARY LOCKED<br>
-                時空連続体への干渉に失敗しました。
+                CODE: SYNC_KEY_MISMATCH<br>
+                STATUS: TIME FREEZE CONTINUED<br>
+                復旧コードが拒否されました。時間は停止したままです。
             </div>
             <button class="btn-retry" onclick="resetSystem()">システム再起動 (RETRY)</button>
         </div>
 
         <div id="success-screen" class="screen">
-            <div class="success-title">UNLOCK SUCCESS</div>
-            <p>時空連続体へのアクセスが承認されました。</p>
+            <div class="success-title">CHRONO RECOVERY SUCCESS</div>
+            <p>時空歪曲の修正が完了し、現実時間(REAL TIME)への回帰が承認されました。</p>
             
             <div class="status-grid">
-                <div class="status-item"><span class="label">STATUS:</span><br><span class="value" style="color: #00ff66;">READY</span></div>
-                <div class="status-item"><span class="label">DRIVE:</span><br><span class="value">ONLINE</span></div>
-                <div class="status-item"><span class="label">DATE:</span><br><span class="value" id="success-date">----/--/--</span></div>
-                <div class="status-item"><span class="label">TIME:</span><br><span class="value" id="success-time">--:--:--</span></div>
+                <div class="status-item"><span class="label">STATUS:</span><br><span class="value" style="color: #00ff66;">SYNCED</span></div>
+                <div class="status-item"><span class="label">TIMELINE:</span><br><span class="value">NORMAL</span></div>
+                <div class="status-item"><span class="label">CURRENT DATE:</span><br><span class="value" id="success-date">----/--/--</span></div>
+                <div class="status-item"><span class="label">REAL TIME:</span><br><span class="value" id="success-time">--:--:--</span></div>
             </div>
         </div>
 
@@ -438,13 +475,15 @@
     <script>
         const ENCRYPTED_PASSWORD = [50, 48, 50, 54]; 
 
-        // 動的なカチカチSE用のAudioContext（音の遅延を防ぐため、ユーザー操作トリガーでリレー）
         let audioCtx = null;
-
         let isTimeHacked = false;       
         let isTimeRunning = true;       
         let isSyncingTime = false;      
         let customTargetDate = null;    
+
+        // 【新設】同一フォルダ内のオーディオファイルを定義
+        let audioSuccess = new Audio('success.m4a');
+        let audioError = new Audio('error.m4a');
 
         function setupReels() {
             const numReels = ['month1', 'month2', 'day1', 'day2', 'hour1', 'hour2', 'min1', 'min2', 'sec1', 'sec2'];
@@ -523,7 +562,7 @@
                 const baseDate = (isTimeHacked && customTargetDate) ? customTargetDate : new Date();
                 const defaultString = getFormattedDateTimeString(baseDate);
 
-                const input = prompt("【時空連続体干渉プロトコル】\n設定したい日時を入力してください:", defaultString);
+                const input = prompt("【時空連続体・改変パラメータ設定】\n任意の時間を指定し、時空をフリーズさせます:", defaultString);
                 
                 if (input) {
                     const parsedDate = new Date(input);
@@ -535,6 +574,10 @@
 
                         document.body.classList.add('time-hacked-state');
                         renderClock(customTargetDate);
+
+                        document.getElementById('main-title').innerHTML = `[WARNING] TIME CORRUPTION DETECTED<br><span style="font-size: 0.8rem; color: #ff3333; font-weight: bold;">STATUS: TIME STOPPED (時間停止状態)</span>`;
+                        document.getElementById('action-btn').textContent = "現実時間への強制復旧";
+                        document.getElementById('password').placeholder = "ENTER RESET CODE";
                     } else {
                         alert("ERROR: 不正な日時フォーマットです。");
                     }
@@ -552,10 +595,12 @@
         }
 
         function startAnalysis() {
-            // 音声コンテキストの初期化
+            // ブラウザのサウンドセキュリティロック解除＆ファイルを事前読み込み
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             }
+            audioSuccess.load();
+            audioError.load();
 
             const lockScreen = document.getElementById('lock-screen');
             const analyzingScreen = document.getElementById('analyzing-screen');
@@ -597,58 +642,58 @@
             setTimeout(processNextStep, 100);
         }
 
-        // === 【演出強化】縦リルスロット ＋ 縦方向の物理的なズレ・揺れエフェクト ===
+        // 同期中のカチカチ音用の軽量WebAudio
+        function playTickBeep() {
+            if (!audioCtx || audioCtx.state === 'suspended') return;
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(1400, audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(0.04, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.02);
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.02);
+        }
+
+        // 縦リールスロット ＋ 縦方向の物理的なズレ・揺れエフェクト同期
         function syncToPresentTime(callback) {
             isSyncingTime = true;
             
             const clockEl = document.getElementById('main-clock-element');
             const panelEl = document.getElementById('panel');
+            const syncingScreen = document.getElementById('syncing-screen');
 
-            // 1. 各数字リールを高速回転（縦スクロール＋ブレ）状態にする
+            syncingScreen.classList.add('active');
+
             const reels = document.querySelectorAll('.clock-digit-reel');
             reels.forEach(r => r.classList.add('spinning'));
 
-            // 2. 【ご要望】時計メーターと中央パネルに縦のガクガクした不規則なズレエフェクト（CSS）を追加
             clockEl.classList.add('sync-jitter');
             panelEl.classList.add('sync-jitter');
 
-            function playClickSound() {
-                if (!audioCtx || audioCtx.state === 'suspended') return;
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(1400, audioCtx.currentTime); 
-                gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.02);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.02);
-            }
-
             let durationCounter = 0;
-            const totalSteps = 45; // スロットが回転する回数（約1.5秒間）
+            const totalSteps = 45; 
 
             function spinStep() {
                 durationCounter++;
 
                 if (durationCounter >= totalSteps) {
-                    // スロット演出終了：現実の現在時刻に完全固定
                     isTimeHacked = false;
                     isTimeRunning = true;
                     isSyncingTime = false;
 
-                    // すべての高速縦スクロール・縦ズレ演出クラスを除去
                     reels.forEach(r => r.classList.remove('spinning'));
                     clockEl.classList.remove('sync-jitter');
                     panelEl.classList.remove('sync-jitter');
+                    syncingScreen.classList.remove('active');
                     
                     renderClock(new Date()); 
                     callback(); 
                     return;
                 }
 
-                // スロット回転中のダミー文字の縦移動処理
                 const remUnit = 1.2;
                 document.getElementById('reel-year').innerHTML = `<span>${Math.floor(Math.random() * 9000 + 1000)}</span>`;
                 
@@ -658,7 +703,7 @@
                     document.getElementById(`reel-${id}`).style.transform = `translateY(-${randomDigit * remUnit}rem)`;
                 });
 
-                playClickSound();
+                playTickBeep(); // 同期中のカチカチ音
                 setTimeout(spinStep, 35);
             }
 
@@ -682,22 +727,35 @@
                 document.body.classList.remove('time-hacked-state');
 
                 if (isTimeHacked && customTargetDate) {
-                    // 縦スロット＋メーター自体が縦にズレる複合演出を開始
                     syncToPresentTime(() => {
                         successScreen.classList.add('active');
                         document.body.style.backgroundColor = '#003311';
+                        
+                        // 【変更】用意された success.m4a を再生
+                        audioSuccess.currentTime = 0;
+                        audioSuccess.play().catch(e => console.log("Audio play blocked:", e));
+
                         setTimeout(() => { document.body.style.backgroundColor = '#0a0e14'; }, 200);
                     });
                 } else {
                     isTimeRunning = true;
                     successScreen.classList.add('active');
                     document.body.style.backgroundColor = '#003311';
+                    
+                    // 【変更】通常解除時も success.m4a を再生
+                    audioSuccess.currentTime = 0;
+                    audioSuccess.play().catch(e => console.log("Audio play blocked:", e));
+
                     setTimeout(() => { document.body.style.backgroundColor = '#0a0e14'; }, 200);
                 }
             } else {
                 errorScreen.classList.add('active');
                 document.body.classList.add('error-state');
                 panel.classList.add('error-panel');
+
+                // 【変更】用意された error.m4a を再生
+                audioError.currentTime = 0;
+                audioError.play().catch(e => console.log("Audio play blocked:", e));
             }
         }
 
