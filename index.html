@@ -33,7 +33,7 @@
             transition: background-color 0.3s ease;
         }
 
-        /* === 【新設】時空改変ノイズ：コマンド入力後に画面全体がガクつく === */
+        /* === 時空改変ノイズ：コマンド入力後に画面全体がガクつく === */
         body.time-hacked-state {
             background-color: #071410 !important;
             animation: body-glitch 0.3s infinite, HueShift 2s infinite;
@@ -55,22 +55,67 @@
             animation: body-glitch 0.5s infinite;
         }
 
+        /* === 時計を縦リールスロット化するためのベース構造 === */
         .system-clock {
             position: absolute;
             top: 20px;
             right: 20px;
             font-size: 0.9rem;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             text-align: right;
             color: var(--neon-blue);
             text-shadow: 0 0 8px rgba(0, 210, 255, 0.6);
             opacity: 0.9;
+            display: flex;
+            align-items: center;
         }
 
-        /* === 【新設】時空改変時の時計ノイズ === */
         body.time-hacked-state .system-clock {
             animation: text-glitch 0.5s infinite;
             color: #ff00ff;
+        }
+
+        /* 【新設】同期中にメーター自体が上下（縦）に激しくズレるエフェクト */
+        .system-clock.sync-jitter {
+            animation: clock-vertical-jitter 0.08s infinite !important;
+        }
+
+        /* スロットマシンのように縦に動かす1文字分の枠 */
+        .clock-digit-slot {
+            display: inline-block;
+            height: 1.2rem;
+            overflow: hidden;
+            position: relative;
+            vertical-align: top;
+            width: 10px; 
+            text-align: center;
+        }
+        
+        /* 【修正】年（4桁）が絶対に切れないよう、幅を「42px」に拡張 */
+        .clock-digit-slot.wide {
+            width: 42px; 
+        }
+
+        .clock-digit-reel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .clock-digit-reel span {
+            display: block;
+            height: 1.2rem;
+            line-height: 1.2rem;
+        }
+
+        /* 縦に高速移動中（同期中）の演出用クラス */
+        .clock-digit-reel.spinning {
+            transition: transform 0.04s linear !important; 
+            filter: blur(1px); 
         }
 
         .container {
@@ -87,7 +132,11 @@
             transition: all 0.3s ease;
         }
 
-        /* 時空改変時はパネルの影も怪しく光る */
+        /* 同期中に中央のコントロールパネルも縦にガクガク揺れる */
+        .container.sync-jitter {
+            animation: panel-vertical-jitter 0.06s infinite !important;
+        }
+
         body.time-hacked-state .container {
             border-color: #ff00ff !important;
             box-shadow: 0 0 25px rgba(255, 0, 255, 0.5) !important;
@@ -185,7 +234,6 @@
             font-weight: bold;
             margin-bottom: 25px;
             letter-spacing: 2px;
-            animation: text-glitch 3s infinite;
         }
 
         .scan-bar-container {
@@ -221,7 +269,7 @@
             font-weight: bold;
             margin-bottom: 20px;
             letter-spacing: 2px;
-            animation: blink 0.4s infinite, text-glitch 1s infinite;
+            animation: blink 0.6s infinite;
         }
 
         .error-details {
@@ -241,13 +289,6 @@
             font-size: 1.8rem;
             margin-bottom: 20px;
             animation: blink 1.2s infinite;
-        }
-
-        .success-msg {
-            word-break: keep-all;
-            overflow-wrap: break-word;
-            display: inline-block;
-            margin: 1em 0;
         }
 
         .status-grid {
@@ -283,6 +324,23 @@
             to { background-color: #1a1100; }
         }
 
+        /* === 【新設】時間を戻すとき、時計メーターが縦に激しくガクガクずれるアニメーション === */
+        @keyframes clock-vertical-jitter {
+            0%, 100% { transform: translateY(0); }
+            20% { transform: translateY(-7px) skewX(1deg); }
+            40% { transform: translateY(6px); }
+            60% { transform: translateY(-4px); }
+            80% { transform: translateY(5px) skewX(-1deg); }
+        }
+
+        /* === 【新設】時間を戻すとき、パネル本体が縦に複雑にシェイクするアニメーション === */
+        @keyframes panel-vertical-jitter {
+            0%, 100% { transform: translateY(0); }
+            25% { transform: translateY(4px); }
+            50% { transform: translateY(-5px); }
+            75% { transform: translateY(3px); }
+        }
+
         @keyframes text-glitch {
             0%, 85%, 89%, 93%, 100% {
                 transform: translate(0, 0) skew(0deg);
@@ -291,21 +349,14 @@
             }
             86% {
                 transform: translate(-4px, 2px) skew(-5deg);
-                filter: hue-rotate(90deg);
                 text-shadow: 3px -2px var(--neon-blue), -3px 2px var(--neon-red);
             }
             88% {
                 transform: translate(3px, -2px) skew(3deg);
                 text-shadow: -3px 3px var(--neon-blue), 3px -2px var(--neon-red);
             }
-            90% {
-                transform: translate(-2px, -1px) skew(2deg);
-                filter: hue-rotate(-50deg);
-            }
-            92% {
-                transform: translate(4px, 3px) skew(-3deg);
-                text-shadow: 3px 2px var(--neon-amber), -3px -2px var(--neon-blue);
-            }
+            90% { transform: translate(-2px, -1px) skew(2deg); }
+            92% { text-shadow: 3px 2px var(--neon-amber), -3px -2px var(--neon-blue); }
         }
 
         @keyframes body-glitch {
@@ -323,8 +374,19 @@
 </head>
 <body>
 
-    <div class="system-clock">
-        SYS_TIME: <span id="sys-date">----/--/--</span> <span id="sys-time">--:--:--</span>
+    <div class="system-clock" id="main-clock-element">
+        SYS_TIME:&nbsp;
+        <div class="clock-digit-slot wide"><div class="clock-digit-reel" id="reel-year"><span>0000</span></div></div>/
+        <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-month1"><span>0</span></div></div>
+        <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-month2"><span>0</span></div></div>/
+        <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-day1"><span>0</span></div></div>
+        <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-day2"><span>0</span></div></div>&nbsp;
+        <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-hour1"><span>0</span></div></div>
+        <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-hour2"><span>0</span></div></div>:
+        <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-min1"><span>0</span></div></div>
+        <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-min2"><span>0</span></div></div>:
+        <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-sec1"><span>0</span></div></div>
+        <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-sec2"><span>0</span></div></div>
     </div>
 
     <div class="container" id="panel">
@@ -361,7 +423,7 @@
 
         <div id="success-screen" class="screen">
             <div class="success-title">UNLOCK SUCCESS</div>
-            <p class="success-msg">時空連続体へのアクセスが承認されました。</p>
+            <p>時空連続体へのアクセスが承認されました。</p>
             
             <div class="status-grid">
                 <div class="status-item"><span class="label">STATUS:</span><br><span class="value" style="color: #00ff66;">READY</span></div>
@@ -376,50 +438,75 @@
     <script>
         const ENCRYPTED_PASSWORD = [50, 48, 50, 54]; 
 
-        const audioSuccess = new Audio('success.m4a');
-        const audioError = new Audio('error.m4a');
+        // 動的なカチカチSE用のAudioContext（音の遅延を防ぐため、ユーザー操作トリガーでリレー）
+        let audioCtx = null;
 
-        // === 時空改変管理用の変数 ===
-        let isTimeHacked = false;       // コマンドで時刻が書き換えられたか
-        let isTimeRunning = true;       // 時計が動いているか
-        let customTargetDate = null;    // 書き換えられたターゲット日時(Dateオブジェクト)
+        let isTimeHacked = false;       
+        let isTimeRunning = true;       
+        let isSyncingTime = false;      
+        let customTargetDate = null;    
 
-        // 時計描画用関数
-        function renderClock(targetDate) {
-            const yyyy = targetDate.getFullYear();
-            const mm = String(targetDate.getMonth() + 1).padStart(2, '0');
-            const dd = String(targetDate.getDate()).padStart(2, '0');
-            const dateStr = `${yyyy}/${mm}/${dd}`;
-            
-            const hh = String(targetDate.getHours()).padStart(2, '0');
-            const min = String(targetDate.getMinutes()).padStart(2, '0');
-            const ss = String(targetDate.getSeconds()).padStart(2, '0');
-            const timeStr = `${hh}:${min}:${ss}`;
+        function setupReels() {
+            const numReels = ['month1', 'month2', 'day1', 'day2', 'hour1', 'hour2', 'min1', 'min2', 'sec1', 'sec2'];
+            numReels.forEach(id => {
+                const reel = document.getElementById(`reel-${id}`);
+                reel.innerHTML = '';
+                for(let i=0; i<=9; i++) {
+                    const span = document.createElement('span');
+                    span.textContent = i;
+                    reel.appendChild(span);
+                }
+            });
+        }
+        setupReels();
 
-            document.getElementById('sys-date').textContent = dateStr;
-            document.getElementById('sys-time').textContent = timeStr;
+        function renderClock(dateObj) {
+            const yyyy = dateObj.getFullYear();
+            const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const dd = String(dateObj.getDate()).padStart(2, '0');
+            const hh = String(dateObj.getHours()).padStart(2, '0');
+            const min = String(dateObj.getMinutes()).padStart(2, '0');
+            const ss = String(dateObj.getSeconds()).padStart(2, '0');
+
+            const reelYear = document.getElementById('reel-year');
+            reelYear.innerHTML = `<span>${yyyy}</span>`;
+
+            const remUnit = 1.2;
+            document.getElementById('reel-month1').style.transform = `translateY(-${mm[0] * remUnit}rem)`;
+            document.getElementById('reel-month2').style.transform = `translateY(-${mm[1] * remUnit}rem)`;
+            document.getElementById('reel-day1').style.transform   = `translateY(-${dd[0] * remUnit}rem)`;
+            document.getElementById('reel-day2').style.transform   = `translateY(-${dd[1] * remUnit}rem)`;
+            document.getElementById('reel-hour1').style.transform  = `translateY(-${hh[0] * remUnit}rem)`;
+            document.getElementById('reel-hour2').style.transform  = `translateY(-${hh[1] * remUnit}rem)`;
+            document.getElementById('reel-min1').style.transform   = `translateY(-${min[0] * remUnit}rem)`;
+            document.getElementById('reel-min2').style.transform   = `translateY(-${min[1] * remUnit}rem)`;
+            document.getElementById('reel-sec1').style.transform   = `translateY(-${ss[0] * remUnit}rem)`;
+            document.getElementById('reel-sec2').style.transform   = `translateY(-${ss[1] * remUnit}rem)`;
 
             const successDate = document.getElementById('success-date');
             const successTime = document.getElementById('success-time');
             if (successDate && successTime) {
-                successDate.textContent = dateStr;
-                successTime.textContent = timeStr;
+                successDate.textContent = `${yyyy}/${mm}/${dd}`;
+                successTime.textContent = `${hh}:${min}:${ss}`;
             }
         }
 
-        // 毎秒呼び出されるメインクロック処理
+        function getFormattedDateTimeString(dateObj) {
+            const yyyy = dateObj.getFullYear();
+            const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const dd = String(dateObj.getDate()).padStart(2, '0');
+            const hh = String(dateObj.getHours()).padStart(2, '0');
+            const min = String(dateObj.getMinutes()).padStart(2, '0');
+            const ss = String(dateObj.getSeconds()).padStart(2, '0');
+            return `${yyyy}/${mm}/${dd} ${hh}:${min}:${ss}`;
+        }
+
         function updateClock() {
-            if (!isTimeRunning) {
-                // 時計停止状態なら表示更新処理をスキップ（止まったままにする）
-                return;
-            }
+            if (!isTimeRunning || isSyncingTime) return;
 
             if (isTimeHacked && customTargetDate) {
-                // ハックが成功して動き出すフェーズ：保持している仮想時刻を1秒進めて描画
-                customTargetDate.setSeconds(customTargetDate.getSeconds() + 1);
                 renderClock(customTargetDate);
             } else {
-                // 通常状態：現在時刻を描画
                 const now = new Date();
                 renderClock(now);
             }
@@ -428,26 +515,25 @@
         updateClock();
 
 
-        // === 【新設】隠しコマンドイベントリスナー (Ctrl + Alt + Shift + C) ===
+        // === 隠しコマンドイベント (Ctrl + Alt + Shift + C) ===
         window.addEventListener('keydown', function(e) {
-            // Ctrl, Alt, Shift がすべて押され、かつキーが 'c' または 'C' の場合
             if (e.ctrlKey && e.altKey && e.shiftKey && (e.key === 'c' || e.key === 'C')) {
                 e.preventDefault();
 
-                const input = prompt("【時空連続体干渉プロトコル】\n設定したい日時を入力してください:\n(フォーマット例: 1955/11/12 22:04:00)");
+                const baseDate = (isTimeHacked && customTargetDate) ? customTargetDate : new Date();
+                const defaultString = getFormattedDateTimeString(baseDate);
+
+                const input = prompt("【時空連続体干渉プロトコル】\n設定したい日時を入力してください:", defaultString);
                 
                 if (input) {
                     const parsedDate = new Date(input);
-                    // 正しい日時形式かバリデーション
                     if (!isNaN(parsedDate.getTime())) {
                         customTargetDate = parsedDate;
                         isTimeHacked = true;
-                        isTimeRunning = false; // 時計をピタッと停止させる
+                        isTimeRunning = false; 
+                        isSyncingTime = false;
 
-                        // 画面全体に時空改変ノイズ用クラスを付与
                         document.body.classList.add('time-hacked-state');
-                        
-                        // 停止した日時を即時反映
                         renderClock(customTargetDate);
                     } else {
                         alert("ERROR: 不正な日時フォーマットです。");
@@ -460,14 +546,17 @@
         function checkPassword(inputStr) {
             if (inputStr.length !== ENCRYPTED_PASSWORD.length) return false;
             for (let i = 0; i < inputStr.length; i++) {
-                if (inputStr.charCodeAt(i) !== ENCRYPTED_PASSWORD[i]) {
-                    return false;
-                }
+                if (inputStr.charCodeAt(i) !== ENCRYPTED_PASSWORD[i]) return false;
             }
             return true;
         }
 
         function startAnalysis() {
+            // 音声コンテキストの初期化
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
             const lockScreen = document.getElementById('lock-screen');
             const analyzingScreen = document.getElementById('analyzing-screen');
             const panel = document.getElementById('panel');
@@ -476,7 +565,6 @@
 
             lockScreen.classList.remove('active');
             analyzingScreen.classList.add('active');
-
             document.body.classList.add('analyzing-state');
             panel.classList.add('analyzing-panel');
 
@@ -487,15 +575,12 @@
                     currentPercent = 100;
                     percentText.textContent = "100%";
                     scanProgress.style.width = "100%";
-                    
                     setTimeout(verifyCode, 400);
                     return;
                 }
 
                 let progressIncrement = Math.floor(Math.random() * 12);
-                if (Math.random() < 0.15) {
-                    progressIncrement = Math.floor(Math.random() * 15) + 10;
-                }
+                if (Math.random() < 0.15) progressIncrement = Math.floor(Math.random() * 15) + 10;
                 let nextDelay = Math.floor(Math.random() * 180) + 40; 
                 if (Math.random() < 0.12) {
                     progressIncrement = 0; 
@@ -504,14 +589,80 @@
 
                 currentPercent += progressIncrement;
                 if (currentPercent > 100) currentPercent = 100;
-
                 percentText.textContent = currentPercent + "%";
                 scanProgress.style.width = currentPercent + "%";
 
                 setTimeout(processNextStep, nextDelay);
             }
-
             setTimeout(processNextStep, 100);
+        }
+
+        // === 【演出強化】縦リルスロット ＋ 縦方向の物理的なズレ・揺れエフェクト ===
+        function syncToPresentTime(callback) {
+            isSyncingTime = true;
+            
+            const clockEl = document.getElementById('main-clock-element');
+            const panelEl = document.getElementById('panel');
+
+            // 1. 各数字リールを高速回転（縦スクロール＋ブレ）状態にする
+            const reels = document.querySelectorAll('.clock-digit-reel');
+            reels.forEach(r => r.classList.add('spinning'));
+
+            // 2. 【ご要望】時計メーターと中央パネルに縦のガクガクした不規則なズレエフェクト（CSS）を追加
+            clockEl.classList.add('sync-jitter');
+            panelEl.classList.add('sync-jitter');
+
+            function playClickSound() {
+                if (!audioCtx || audioCtx.state === 'suspended') return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(1400, audioCtx.currentTime); 
+                gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.02);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.02);
+            }
+
+            let durationCounter = 0;
+            const totalSteps = 45; // スロットが回転する回数（約1.5秒間）
+
+            function spinStep() {
+                durationCounter++;
+
+                if (durationCounter >= totalSteps) {
+                    // スロット演出終了：現実の現在時刻に完全固定
+                    isTimeHacked = false;
+                    isTimeRunning = true;
+                    isSyncingTime = false;
+
+                    // すべての高速縦スクロール・縦ズレ演出クラスを除去
+                    reels.forEach(r => r.classList.remove('spinning'));
+                    clockEl.classList.remove('sync-jitter');
+                    panelEl.classList.remove('sync-jitter');
+                    
+                    renderClock(new Date()); 
+                    callback(); 
+                    return;
+                }
+
+                // スロット回転中のダミー文字の縦移動処理
+                const remUnit = 1.2;
+                document.getElementById('reel-year').innerHTML = `<span>${Math.floor(Math.random() * 9000 + 1000)}</span>`;
+                
+                const targets = ['month1', 'month2', 'day1', 'day2', 'hour1', 'hour2', 'min1', 'min2', 'sec1', 'sec2'];
+                targets.forEach(id => {
+                    const randomDigit = Math.floor(Math.random() * 10);
+                    document.getElementById(`reel-${id}`).style.transform = `translateY(-${randomDigit * remUnit}rem)`;
+                });
+
+                playClickSound();
+                setTimeout(spinStep, 35);
+            }
+
+            spinStep();
         }
 
         function verifyCode() {
@@ -528,23 +679,22 @@
             panel.classList.remove('analyzing-panel');
 
             if (checkPassword(input)) {
-                audioSuccess.currentTime = 0;
-                audioSuccess.play().catch(e => console.log("Audio play prevented:", e));
-
-                // === 成功時の処理：ノイズを止め、時計を再稼働 ===
                 document.body.classList.remove('time-hacked-state');
-                isTimeRunning = true; // 動き出す
 
-                successScreen.classList.add('active');
-                document.body.style.backgroundColor = '#003311';
-                setTimeout(() => {
-                    document.body.style.backgroundColor = '#0a0e14';
-                }, 200);
+                if (isTimeHacked && customTargetDate) {
+                    // 縦スロット＋メーター自体が縦にズレる複合演出を開始
+                    syncToPresentTime(() => {
+                        successScreen.classList.add('active');
+                        document.body.style.backgroundColor = '#003311';
+                        setTimeout(() => { document.body.style.backgroundColor = '#0a0e14'; }, 200);
+                    });
+                } else {
+                    isTimeRunning = true;
+                    successScreen.classList.add('active');
+                    document.body.style.backgroundColor = '#003311';
+                    setTimeout(() => { document.body.style.backgroundColor = '#0a0e14'; }, 200);
+                }
             } else {
-                audioError.currentTime = 0;
-                audioError.play().catch(e => console.log("Audio play prevented:", e));
-
-                // 失敗時は時空改変ノイズは維持したままエラー状態を重ねる
                 errorScreen.classList.add('active');
                 document.body.classList.add('error-state');
                 panel.classList.add('error-panel');
@@ -558,9 +708,6 @@
             const panel = document.getElementById('panel');
             const percentText = document.getElementById('percent-text');
             const scanProgress = document.getElementById('scan-progress');
-
-            audioError.pause();
-            audioError.currentTime = 0;
 
             errorScreen.classList.remove('active');
             lockScreen.classList.add('active');
@@ -576,9 +723,7 @@
         }
 
         document.getElementById('password').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                startAnalysis();
-            }
+            if (e.key === 'Enter') startAnalysis();
         });
     </script>
 </body>
