@@ -57,7 +57,8 @@
             position: absolute;
             top: 30px;
             right: 30px;
-            font-size: 1.35rem;
+            font-size: 18px;
+            font-weight: bold;
             letter-spacing: 1px;
             text-align: right;
             color: var(--neon-blue);
@@ -65,24 +66,29 @@
             opacity: 0.9;
             display: flex;
             align-items: center;
+            height: 24px;
+            line-height: 24px;
         }
 
         body.time-hacked-state .system-clock {
+            animation: text-glitch 0.5s infinite;
             color: var(--neon-purple);
         }
 
+        /* 同期中にメーター自体が上下に激しくズレるエフェクト */
+        .system-clock.sync-jitter {
+            animation: clock-vertical-jitter 0.08s infinite !important;
+        }
+
+        /* 縦リール用の枠（高さを24pxに完全固定） */
         .clock-digit-slot {
             display: inline-block;
-            height: 1.8rem;
+            height: 24px;
             overflow: hidden;
             position: relative;
             vertical-align: top;
-            width: 16px; 
+            width: 14px; 
             text-align: center;
-        }
-        
-        .clock-digit-slot.wide {
-            width: 64px; 
         }
 
         .clock-digit-reel {
@@ -90,14 +96,29 @@
             top: 0;
             left: 0;
             width: 100%;
+            /* 1秒ごとの縦回転のなめらかさを定義（0.3秒かけて綺麗に回る） */
+            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
             display: flex;
             flex-direction: column;
         }
 
+        /* リールの中の数字の高さも完全に24pxに統一 */
         .clock-digit-reel span {
             display: block;
-            height: 1.8rem;
-            line-height: 1.8rem;
+            height: 24px;
+            line-height: 24px;
+            font-size: 18px;
+        }
+
+        /* 高速縦スクロール（ブレ） */
+        .clock-digit-reel.spinning {
+            transition: transform 0.04s linear !important; 
+            filter: blur(1px); 
+        }
+
+        /* 同期中にコントロールパネルも縦揺れ */
+        .container.sync-jitter {
+            animation: panel-vertical-jitter 0.06s infinite !important;
         }
 
         .container {
@@ -124,12 +145,17 @@
             box-shadow: 0 0 45px rgba(255, 170, 0, 0.5) !important;
         }
 
+        /* 【新設】時間軸の整合性を修正中... のときに枠線を紫色（マゼンタ）にする設定 */
+        .container.syncing-panel {
+            border-color: var(--neon-purple) !important;
+            box-shadow: 0 0 45px rgba(255, 0, 255, 0.5) !important;
+        }
+
         .container.error-panel {
             border-color: var(--neon-red) !important;
             box-shadow: 0 0 45px rgba(255, 51, 51, 0.6) !important;
         }
 
-        /* SUCCESSしたとき、文字の緑色と統一感を持たせる設定 */
         .container.success-panel {
             border-color: var(--neon-green) !important;
             box-shadow: 0 0 45px rgba(0, 255, 102, 0.4) !important;
@@ -358,6 +384,41 @@
             to { background-color: #1a1100; }
         }
 
+        /* メーター縦ズレ */
+        @keyframes clock-vertical-jitter {
+            0%, 100% { transform: translateY(0); }
+            20% { transform: translateY(-7px) skewX(1deg); }
+            40% { transform: translateY(6px); }
+            60% { transform: translateY(-4px); }
+            80% { transform: translateY(5px) skewX(-1deg); }
+        }
+
+        /* パネル縦ズレ */
+        @keyframes panel-vertical-jitter {
+            0%, 100% { transform: translateY(0); }
+            25% { transform: translateY(4px); }
+            50% { transform: translateY(-5px); }
+            75% { transform: translateY(3px); }
+        }
+
+        @keyframes text-glitch {
+            0%, 85%, 89%, 93%, 100% {
+                transform: translate(0, 0) skew(0deg);
+                filter: hue-rotate(0deg);
+                text-shadow: 0 0 10px currentColor;
+            }
+            86% {
+                transform: translate(-4px, 2px) skew(-5deg);
+                text-shadow: 3px -2px var(--neon-blue), -3px 2px var(--neon-red);
+            }
+            88% {
+                transform: translate(3px, -2px) skew(3deg);
+                text-shadow: -3px 3px var(--neon-blue), 3px -2px var(--neon-red);
+            }
+            90% { transform: translate(-2px, -1px) skew(2deg); }
+            92% { text-shadow: 3px 2px var(--neon-amber), -3px -2px var(--neon-blue); }
+        }
+
         @keyframes text-glitch-irregular {
             0%, 70%, 74%, 78%, 82%, 95%, 100% {
                 transform: translate(0, 0) skew(0deg);
@@ -391,7 +452,10 @@
 
     <div class="system-clock" id="main-clock-element">
         SYS_TIME:&nbsp;
-        <div class="clock-digit-slot wide"><div class="clock-digit-reel" id="reel-year"><span>0000</span></div></div>/
+        <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-year1"></div></div>
+        <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-year2"></div></div>
+        <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-year3"></div></div>
+        <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-year4"></div></div>/
         <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-month1"><span>0</span></div></div>
         <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-month2"><span>0</span></div></div>/
         <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-day1"><span>0</span></div></div>
@@ -450,8 +514,8 @@
         </div>
 
         <div id="success-screen" class="screen">
-            <div class="success-title">SUCCESS</div>
-            <p>タイムマシンの起動に成功しました。</p>
+            <div class="success-title">GAME CLEAR</div>
+            <p>タイムマシンの起動に成功しました。<br>再び時間が動き出しました。</p>
             
             <div class="status-grid">
                 <div class="status-item"><span class="label">STATUS:</span><br><span class="value" style="color: #00ff66;">SYNCED</span></div>
@@ -476,44 +540,62 @@
         const audioSuccess = document.getElementById('snd-success');
         const audioError = document.getElementById('snd-error');
 
+        const allReelIds = [
+            'year1', 'year2', 'year3', 'year4',
+            'month1', 'month2', 'day1', 'day2', 
+            'hour1', 'hour2', 'min1', 'min2', 'sec1', 'sec2'
+        ];
+
+        // 縦ループスクロールが綺麗に繋がるよう、0~9の数値を3連（計30個）セットします
         function setupReels() {
-            const numReels = ['month1', 'month2', 'day1', 'day2', 'hour1', 'hour2', 'min1', 'min2', 'sec1', 'sec2'];
-            numReels.forEach(id => {
+            allReelIds.forEach(id => {
                 const reel = document.getElementById(`reel-${id}`);
-                if (reel) reel.innerHTML = '<span>0</span>';
+                if (!reel) return;
+                reel.innerHTML = '';
+                for(let loop=0; loop<3; loop++) {
+                    for(let i=0; i<=9; i++) {
+                        const span = document.createElement('span');
+                        span.textContent = i;
+                        reel.appendChild(span);
+                    }
+                }
             });
         }
         setupReels();
 
+        // 1文字の高さを「24（px）」に固定し、中央のセット（インデックス10〜19）を使ってなめらかに移動させます
+        function moveReelToDigit(id, targetDigit) {
+            const pixelUnit = 24; 
+            const digitInt = parseInt(targetDigit, 10) || 0;
+            const targetIndex = 10 + digitInt;
+            const reel = document.getElementById(`reel-${id}`);
+            if (reel) {
+                reel.style.transform = `translateY(-${targetIndex * pixelUnit}px)`;
+            }
+        }
+
         function renderClock(dateObj) {
-            const yyyy = dateObj.getFullYear();
+            const yyyy = String(dateObj.getFullYear()).padStart(4, '0');
             const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
             const dd = String(dateObj.getDate()).padStart(2, '0');
             const hh = String(dateObj.getHours()).padStart(2, '0');
             const min = String(dateObj.getMinutes()).padStart(2, '0');
             const ss = String(dateObj.getSeconds()).padStart(2, '0');
 
-            const reelYear = document.getElementById('reel-year');
-            if (reelYear) reelYear.innerHTML = `<span>${yyyy}</span>`;
-
-            const setDigit = (id, val) => {
-                const el = document.getElementById(id);
-                if (el) {
-                    const span = el.querySelector('span');
-                    if (span) span.textContent = val;
-                }
-            };
-
-            setDigit('reel-month1', mm[0]);
-            setDigit('reel-month2', mm[1]);
-            setDigit('reel-day1', dd[0]);
-            setDigit('reel-day2', dd[1]);
-            setDigit('reel-hour1', hh[0]);
-            setDigit('reel-hour2', hh[1]);
-            setDigit('reel-min1', min[0]);
-            setDigit('reel-min2', min[1]);
-            setDigit('reel-sec1', ss[0]);
-            setDigit('reel-sec2', ss[1]);
+            moveReelToDigit('year1', yyyy[0]);
+            moveReelToDigit('year2', yyyy[1]);
+            moveReelToDigit('year3', yyyy[2]);
+            moveReelToDigit('year4', yyyy[3]);
+            moveReelToDigit('month1', mm[0]);
+            moveReelToDigit('month2', mm[1]);
+            moveReelToDigit('day1', dd[0]);
+            moveReelToDigit('day2', dd[1]);
+            moveReelToDigit('hour1', hh[0]);
+            moveReelToDigit('hour2', hh[1]);
+            moveReelToDigit('min1', min[0]);
+            moveReelToDigit('min2', min[1]);
+            moveReelToDigit('sec1', ss[0]);
+            moveReelToDigit('sec2', ss[1]); 
 
             const successDate = document.getElementById('success-date');
             const successTime = document.getElementById('success-time');
@@ -572,7 +654,6 @@
                         const actionBtn = document.getElementById('action-btn');
                         const passwordInput = document.getElementById('password');
 
-                        // 「時間停止中」の文字も赤色(var(--neon-red))に統一
                         if (mainTitle) {
                             mainTitle.className = "glitch-text-active";
                             mainTitle.innerHTML = `<span style="color: var(--neon-red); text-shadow: 0 0 10px var(--neon-red);">[WARNING] TIME STOPPED</span><br><span style="font-size: 1.2rem; color: var(--neon-red); font-weight: bold; letter-spacing: 1px; text-shadow: 0 0 8px var(--neon-red);">時間停止中</span>`;
@@ -678,8 +759,18 @@
         function syncToPresentTime(callback) {
             isSyncingTime = true;
             
+            const clockEl = document.getElementById('main-clock-element');
+            const panelEl = document.getElementById('panel');
             const syncingScreen = document.getElementById('syncing-screen');
+
             if (syncingScreen) syncingScreen.classList.add('active');
+            if (panelEl) panelEl.classList.add('syncing-panel');
+
+            const reels = document.querySelectorAll('.clock-digit-reel');
+            reels.forEach(r => r.classList.add('spinning'));
+
+            if (clockEl) clockEl.classList.add('sync-jitter');
+            if (panelEl) panelEl.classList.add('sync-jitter');
 
             let durationCounter = 0;
             const totalSteps = 45; 
@@ -692,28 +783,31 @@
                     isTimeRunning = true;
                     isSyncingTime = false;
 
+                    reels.forEach(r => r.classList.remove('spinning'));
+                    if (clockEl) clockEl.classList.remove('sync-jitter');
+                    if (panelEl) panelEl.classList.remove('sync-jitter');
                     if (syncingScreen) syncingScreen.classList.remove('active');
+                    if (panelEl) panelEl.classList.remove('syncing-panel');
                     
+                    // 現実の現在時刻にピタッとなめらかに着地
                     renderClock(new Date()); 
                     callback(); 
                     return;
                 }
 
-                const reelYear = document.getElementById('reel-year');
-                if (reelYear) reelYear.innerHTML = `<span>${Math.floor(Math.random() * 9000 + 1000)}</span>`;
+                const pixelUnit = 24;
                 
-                const targets = ['month1', 'month2', 'day1', 'day2', 'hour1', 'hour2', 'min1', 'min2', 'sec1', 'sec2'];
-                targets.forEach(id => {
-                    const randomDigit = Math.floor(Math.random() * 10);
-                    const el = document.getElementById(`reel-${id}`);
-                    if (el) {
-                        const span = el.querySelector('span');
-                        if (span) span.textContent = randomDigit;
+                // 全30個の選択肢から縦位置を毎回高速シャッフル
+                allReelIds.forEach(id => {
+                    const randomSlotIndex = Math.floor(Math.random() * 30);
+                    const reel = document.getElementById(`reel-${id}`);
+                    if (reel) {
+                        reel.style.transform = `translateY(-${randomSlotIndex * pixelUnit}px)`;
                     }
                 });
 
                 playTickBeep(); 
-                setTimeout(spinStep, 35);
+                setTimeout(spinStep, 40);
             }
 
             spinStep();
@@ -740,7 +834,6 @@
                 if (isTimeHacked && customTargetDate) {
                     syncToPresentTime(() => {
                         if (successScreen) successScreen.classList.add('active');
-                        // 成功時に枠線を緑色クラスにする
                         if (panel) panel.classList.add('success-panel');
                         document.body.style.backgroundColor = '#003311';
                         
@@ -790,7 +883,8 @@
             document.body.classList.remove('error-state');
             if (panel) {
                 panel.classList.remove('error-panel');
-                panel.classList.remove('success-panel'); // 成功枠のリセット
+                panel.classList.remove('success-panel');
+                panel.classList.remove('syncing-panel');
             }
             
             if (percentText) percentText.textContent = "0%";
