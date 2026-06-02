@@ -804,8 +804,8 @@
             <div class="status-grid">
                 <div class="status-item"><span class="label">STATUS:</span><br><span class="value" style="color: #00ff66;">SYNCED</span></div>
                 <div class="status-item"><span class="label">TIMELINE:</span><br><span class="value" id="success-timeline">NORMAL</span></div>
-                <div class="status-item"><span class="label">CURRENT DATE:</span><br><span class="value" id="success-date">----/--/--</span></div>
-                <div class="status-item"><span class="label">REAL TIME:</span><br><span class="value" id="success-time">--:--:--</span></div>
+                <div class="status-item"><span class="label">LATENCY:</span><br><span class="value" id="success-date">0.04ms</span></div>
+                <div class="status-item"><span class="label">CORE TEMP:</span><br><span class="value" id="success-time">36.8°C</span></div>
             </div>
         </div>
 
@@ -884,12 +884,7 @@
             moveReelToDigit('sec1', ss[0]);
             moveReelToDigit('sec2', ss[1]); 
 
-            const successDate = document.getElementById('success-date');
-            const successTime = document.getElementById('success-time');
-            if (successDate && successTime) {
-                successDate.textContent = `${yyyy}/${mm}/${dd}`;
-                successTime.textContent = `${hh}:${min}:${ss}`;
-            }
+            // ゲームクリア画面用の個別テキスト書き換えを削除（LATENCYとCORE TEMPを固定保持するため）
         }
 
         function getFormattedDateTimeString(dateObj) {
@@ -1221,12 +1216,7 @@
                     if (syncingScreen) syncingScreen.classList.remove('active');
                     if (panelEl) panelEl.classList.remove('syncing-panel');
                     
-                    // 全パーツの非表示クラスを一斉リセット
-                    const items = ['group-year', 'group-month', 'group-day', 'group-hour', 'group-min', 'group-sec', 'sep-year', 'sep-month', 'sep-hour', 'sep-min', 'group-space-mid'];
-                    items.forEach(id => {
-                        const el = document.getElementById(id);
-                        if(el) el.classList.remove('hide-component');
-                    });
+                    // 【修正】全パーツの一斉リセット処理（非表示クラスの削除）をオミットし、消した設定を維持する
 
                     callback(); 
                     return;
@@ -1315,15 +1305,15 @@
             const tlEl = document.getElementById('success-timeline');
             
             if (timelineStatus === "ALTERED") {
-                if (msgEl) msgEl.innerHTML = "指定された時間軸の固定化に成功しました。<br>歪んだ時空の中で、指定時刻から再び時間が動き出します。";
+                if (msgEl) msgEl.innerHTML = "指定された時間軸の固定化に成功しました。<br>歪んだ時空の中で、再び時間が動き出します。";
                 if (tlEl) tlEl.textContent = "ALTERED (TRAVEL)";
                 document.body.classList.add('time-hacked-state');
             } else if (timelineStatus === "JUMPED") {
-                if (msgEl) msgEl.innerHTML = "時空跳躍（タイムジャンプ）の実行に成功しました。<br>指定された「第2の未来（過去）」から新しく時間が進行します。";
+                if (msgEl) msgEl.innerHTML = "時空跳躍（タイムジャンプ）の実行に成功しました。<br>時間が進行します。";
                 if (tlEl) tlEl.textContent = "TEMPORAL JUMPED";
                 document.body.classList.add('time-hacked-state'); 
             } else if (timelineStatus === "PRESENT") {
-                if (msgEl) msgEl.innerHTML = "タイムロックを正常にオーバーライドしました。<br>タイムラインを現実の現在時刻に強制同期しました。";
+                if (msgEl) msgEl.innerHTML = "タイムロックを正常にオーバーライドしました。<br>タイムラインを現実の現在時刻に同期しました。";
                 if (tlEl) tlEl.textContent = "SYNCHRONIZED";
             } else {
                 if (msgEl) msgEl.innerHTML = "タイムマシンの起動に成功しました。<br>再び時間が動き出しました。";
