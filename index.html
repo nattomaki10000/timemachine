@@ -24,8 +24,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh; /* height から min-height に変更し、縦に伸びるよう修正 */
+            overflow-y: auto;  /* 画面全体がはみ出た場合にスクロール可能に */
             background-image: 
                 radial-gradient(circle at 50% 50%, rgba(0, 255, 102, 0.1) 0%, transparent 80%),
                 linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
@@ -151,6 +151,8 @@
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s ease;
+            padding: 20px; /* モーダル自体が画面端につかないよう余白を追加 */
+            box-sizing: border-box;
         }
         .modal-overlay.active {
             opacity: 1;
@@ -163,9 +165,12 @@
             border-radius: 12px;
             padding: 30px;
             max-width: 480px;
-            width: 90%;
+            width: 100%;
+            max-height: 90vh; /* 画面からはみ出さないよう高さを制限 */
+            overflow-y: auto; /* 項目が多い場合にモーダル内スクロールを有効化 */
             text-align: left;
             font-family: inherit;
+            box-sizing: border-box;
         }
         .modal-title {
             color: var(--neon-amber);
@@ -318,6 +323,7 @@
             box-sizing: border-box;
             backdrop-filter: blur(5px);
             transition: all 0.3s ease;
+            margin: 40px 20px; /* 上下に余白をつけてスクロール時に見やすく */
         }
 
         body.time-hacked-state .container {
@@ -806,7 +812,7 @@
     </div>
 
     <script>
-        const ENCRYPTED_PASSWORD = [50, 48, 50, 54]; 
+        const ENCRYPTED_PASSWORD = [50, 48, 50, 54];
 
         let audioCtx = null;
         let isTimeHacked = false;       
@@ -941,7 +947,7 @@
                 const baseDate = (isTimeHacked && customTargetDate) ? customTargetDate : new Date();
                 document.getElementById('modal-time-input').value = getFormattedDateTimeString(baseDate);
                 
-                // ③の入力欄の初期値
+                // ③の入力欄의 初期値
                 document.getElementById('modal-success-time-input').value = getFormattedDateTimeString(baseDate);
                 
                 document.getElementById('time-modal').classList.add('active');
@@ -1020,15 +1026,14 @@
             lastUpdateTime = Date.now();
             renderClock(customTargetDate);
 
-            // 警告タイトル表示
-            const formattedStr = getFormattedDateTimeString(customTargetDate);
+            // 警告タイトル表示（[WARNING] AT などの表記を削除）
             const mainTitle = document.getElementById('main-title');
             const actionBtn = document.getElementById('action-btn');
             const passwordInput = document.getElementById('password');
 
             if (mainTitle) {
                 mainTitle.className = "glitch-text-active";
-                mainTitle.innerHTML = `<span style="color: var(--neon-red); text-shadow: 0 0 10px var(--neon-red);">[WARNING] TIME STOPPED</span><br><span style="font-size: 1.1rem; color: #ff9999; letter-spacing: 1px;">AT ${formattedStr}</span>`;
+                mainTitle.innerHTML = `<span style="color: var(--neon-red); text-shadow: 0 0 10px var(--neon-red);">[WARNING] TIME STOPPED</span><br><span style="font-size: 1.1rem; color: #ff9999; letter-spacing: 1px;">&nbsp;</span>`;
             }
             if (actionBtn) actionBtn.textContent = "タイムマシンを起動する";
             if (passwordInput) passwordInput.placeholder = "ENTER CODE";
@@ -1065,10 +1070,9 @@
                 if (analysisTitle) analysisTitle.textContent = "RESYNCHRONIZING SYSTEM TIME...";
                 if (analysisSubtitle) analysisSubtitle.textContent = "現在時刻へ同調中...（手動割り込み）";
             } else {
-                const formattedStr = getFormattedDateTimeString(customTargetDate);
                 if (mainTitle) {
                     mainTitle.className = "glitch-text-active";
-                    mainTitle.innerHTML = `<span style="color: var(--neon-amber); text-shadow: 0 0 10px var(--neon-amber);">[WARNING] TIME ALTERED</span><br><span style="font-size: 1.1rem; color: #ffe0b3; letter-spacing: 1px;">FROM ${formattedStr}</span>`;
+                    mainTitle.innerHTML = `<span style="color: var(--neon-amber); text-shadow: 0 0 10px var(--neon-amber);">[WARNING] TIME ALTERED</span><br><span style="font-size: 1.1rem; color: #ffe0b3; letter-spacing: 1px;">&nbsp;</span>`;
                 }
                 if (analysisTitle) analysisTitle.textContent = "STABILIZING ALTERED TIMELINE...";
                 if (analysisSubtitle) analysisSubtitle.textContent = "歪んだ時間軸を固定中...（手動割り込み）";
@@ -1269,12 +1273,12 @@
                             showSuccessState(successScreen, panel, "PRESENT");
                         });
                     } else if (successResumeMode === 2) {
-                        // ② 停止した時間のまま進める (スピン演出をせずその場からスタート)
+                        // ② 停止した時間のまま進める
                         isTimeRunning = true;
                         lastUpdateTime = Date.now();
                         showSuccessState(successScreen, panel, "ALTERED");
                     } else if (successResumeMode === 3) {
-                        // ③ 別の指定した時間から再開 (スピン演出を挟んでその時間へワープ)
+                        // ③ 別の指定した時間から再開
                         launchClockSpinAnimation("JUMP", () => {
                             isTimeHacked = true;
                             isTimeRunning = true;
@@ -1317,7 +1321,7 @@
             } else if (timelineStatus === "JUMPED") {
                 if (msgEl) msgEl.innerHTML = "時空跳躍（タイムジャンプ）の実行に成功しました。<br>指定された「第2の未来（過去）」から新しく時間が進行します。";
                 if (tlEl) tlEl.textContent = "TEMPORAL JUMPED";
-                document.body.classList.add('time-hacked-state'); // トラベル/ジャンプ時は紫ネオン
+                document.body.classList.add('time-hacked-state'); 
             } else if (timelineStatus === "PRESENT") {
                 if (msgEl) msgEl.innerHTML = "タイムロックを正常にオーバーライドしました。<br>タイムラインを現実の現在時刻に強制同期しました。";
                 if (tlEl) tlEl.textContent = "SYNCHRONIZED";
