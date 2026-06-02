@@ -53,21 +53,36 @@
                 linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
         }
 
+        /* 時計表示部分 */
         .system-clock {
             position: absolute;
             top: 30px;
             right: 30px;
             font-size: 18px;
             font-weight: bold;
-            letter-spacing: 1px;
-            text-align: right;
             color: var(--neon-blue);
             text-shadow: 0 0 8px rgba(0, 210, 255, 0.6);
             opacity: 0.9;
             display: flex;
             align-items: center;
+            justify-content: flex-end;
+            gap: 2px;
             height: 24px;
             line-height: 24px;
+        }
+
+        .clock-separator {
+            display: inline-block;
+            color: var(--neon-blue);
+            margin: 0 2px;
+        }
+        body.time-hacked-state .clock-separator {
+            color: var(--neon-purple);
+        }
+
+        .clock-group-space {
+            width: 12px;
+            display: inline-block;
         }
 
         body.time-hacked-state .system-clock {
@@ -75,12 +90,15 @@
             color: var(--neon-purple);
         }
 
-        /* 同期中にメーター自体が上下に激しくズレるエフェクト */
         .system-clock.sync-jitter {
             animation: clock-vertical-jitter 0.08s infinite !important;
         }
 
-        /* 縦リール用の枠（高さを24pxに完全固定） */
+        .clock-unit-group {
+            display: flex;
+            align-items: center;
+        }
+
         .clock-digit-slot {
             display: inline-block;
             height: 24px;
@@ -91,18 +109,20 @@
             text-align: center;
         }
 
+        .hide-component {
+            display: none !important;
+        }
+
         .clock-digit-reel {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            /* 1秒ごとの縦回転のなめらかさを定義（0.3秒かけて綺麗に回る） */
             transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
             display: flex;
             flex-direction: column;
         }
 
-        /* リールの中の数字の高さも完全に24pxに統一 */
         .clock-digit-reel span {
             display: block;
             height: 24px;
@@ -110,13 +130,178 @@
             font-size: 18px;
         }
 
-        /* 高速縦スクロール（ブレ） */
         .clock-digit-reel.spinning {
             transition: transform 0.04s linear !important; 
             filter: blur(1px); 
         }
 
-        /* 同期中にコントロールパネルも縦揺れ */
+        /* HTML製カスタムポップアップ */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 5, 10, 0.85);
+            backdrop-filter: blur(6px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-content {
+            background: rgba(16, 24, 36, 0.95);
+            border: 2px solid var(--neon-amber);
+            box-shadow: 0 0 30px rgba(255, 170, 0, 0.3);
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 480px;
+            width: 90%;
+            text-align: left;
+            font-family: inherit;
+        }
+        .modal-title {
+            color: var(--neon-amber);
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px dashed var(--neon-amber);
+            padding-bottom: 10px;
+        }
+        
+        .modal-content.resume-theme {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 30px rgba(0, 210, 255, 0.3);
+        }
+        .modal-content.resume-theme .modal-title {
+            color: var(--neon-blue);
+            border-bottom-color: var(--neon-blue);
+        }
+
+        .modal-field {
+            margin-bottom: 20px;
+        }
+        .modal-field label {
+            display: block;
+            color: #ccc;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+        .modal-input-text {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 170, 0, 0.5);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 1.1rem;
+            box-sizing: border-box;
+            outline: none;
+            font-family: inherit;
+        }
+        .modal-input-text:focus {
+            border-color: var(--neon-amber);
+            box-shadow: 0 0 10px rgba(255, 170, 0, 0.4);
+        }
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        .checkbox-label, .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 1.05rem;
+            user-select: none;
+        }
+        .checkbox-label input[type="checkbox"], .radio-label input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--neon-amber);
+            cursor: pointer;
+        }
+        .radio-group-box {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255, 170, 0, 0.2);
+            padding: 12px;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .sub-input-container {
+            margin-top: 5px;
+            margin-left: 28px;
+            transition: all 0.3s ease;
+        }
+        .modal-btns {
+            display: flex;
+            gap: 15px;
+        }
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            font-family: inherit;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 6px;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+        }
+        .modal-btn-submit {
+            border: 1px solid var(--neon-amber);
+            color: var(--neon-amber);
+        }
+        .modal-btn-submit:hover {
+            background: var(--neon-amber);
+            color: #000;
+            font-weight: bold;
+            box-shadow: 0 0 15px var(--neon-amber);
+        }
+        .modal-btn-cancel {
+            border: 1px solid #666;
+            color: #aaa;
+        }
+        .modal-btn-cancel:hover {
+            background: #333;
+            color: #fff;
+        }
+
+        .modal-btn-resume-target {
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+        }
+        .modal-btn-resume-target:hover {
+            background: var(--neon-blue);
+            color: #000;
+            font-weight: bold;
+            box-shadow: 0 0 15px var(--neon-blue);
+        }
+        .modal-btn-resume-now {
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+        }
+        .modal-btn-resume-now:hover {
+            background: var(--neon-green);
+            color: #000;
+            font-weight: bold;
+            box-shadow: 0 0 15px var(--neon-green);
+        }
+
+        /* 既存のコンテナデザイン */
         .container.sync-jitter {
             animation: panel-vertical-jitter 0.06s infinite !important;
         }
@@ -145,7 +330,6 @@
             box-shadow: 0 0 45px rgba(255, 170, 0, 0.5) !important;
         }
 
-        /* 【新設】時間軸の整合性を修正中... のときに枠線を紫色（マゼンタ）にする設定 */
         .container.syncing-panel {
             border-color: var(--neon-purple) !important;
             box-shadow: 0 0 45px rgba(255, 0, 255, 0.5) !important;
@@ -384,7 +568,6 @@
             to { background-color: #1a1100; }
         }
 
-        /* メーター縦ズレ */
         @keyframes clock-vertical-jitter {
             0%, 100% { transform: translateY(0); }
             20% { transform: translateY(-7px) skewX(1deg); }
@@ -393,7 +576,6 @@
             80% { transform: translateY(5px) skewX(-1deg); }
         }
 
-        /* パネル縦ズレ */
         @keyframes panel-vertical-jitter {
             0%, 100% { transform: translateY(0); }
             25% { transform: translateY(4px); }
@@ -450,22 +632,118 @@
     <audio id="snd-success" src="success.m4a" preload="auto"></audio>
     <audio id="snd-error" src="error.m4a" preload="auto"></audio>
 
+    <div class="modal-overlay" id="time-modal">
+        <div class="modal-content">
+            <div class="modal-title">⏳ QUANTUM TIME TARGET SETTING</div>
+            <div class="modal-field">
+                <label for="modal-time-input">目標日時（停止させる時間）を指定：</label>
+                <input type="text" id="modal-time-input" class="modal-input-text" placeholder="YYYY/MM/DD HH:MM:SS">
+            </div>
+            
+            <div class="modal-field">
+                <label style="margin-bottom: 8px;">🔑 成功(解除)時に動かす時間を選択：</label>
+                <div class="radio-group-box">
+                    <label class="radio-label">
+                        <input type="radio" name="success-mode" id="rad-success-real" checked onchange="toggleSuccessTimeInput()"> 
+                        <span style="color: var(--neon-green);">① 現実の時間から再開 (リアルタイム)</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="success-mode" id="rad-success-target" onchange="toggleSuccessTimeInput()"> 
+                        <span style="color: var(--neon-blue);">② 停止した時間のまま進める (トラベル)</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="success-mode" id="rad-success-custom" onchange="toggleSuccessTimeInput()"> 
+                        <span style="color: var(--neon-purple);">③ 別の指定した時間から再開 (ジャンプ)</span>
+                    </label>
+                    <div id="custom-success-time-container" class="sub-input-container" style="display: none;">
+                        <input type="text" id="modal-success-time-input" class="modal-input-text" style="font-size: 0.95rem; padding: 8px;" placeholder="再開日時 YYYY/MM/DD HH:MM:SS">
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-field">
+                <label style="margin-bottom: 8px;">表示させる時間項目を選択：</label>
+                <div class="checkbox-grid">
+                    <label class="checkbox-label"><input type="checkbox" id="chk-year" checked> 年 (Year)</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-month" checked> 月 (Month)</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-day" checked> 日 (Day)</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-hour" checked> 時 (Hour)</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-min" checked> 分 (Minute)</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk-sec" checked> 秒 (Second)</label>
+                </div>
+            </div>
+            <div class="modal-btns">
+                <button class="modal-btn modal-btn-cancel" onclick="closeTimeModal()">CANCEL</button>
+                <button class="modal-btn modal-btn-submit" onclick="submitTimeModal()">EXECUTE</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="resume-modal">
+        <div class="modal-content resume-theme">
+            <div class="modal-title">🔄 CHRONO STREAM RESUME OPTION</div>
+            <div class="modal-field">
+                <p style="font-size: 1.05rem; color: #fff; margin: 0 0 15px 0; line-height: 1.5;">
+                    現在、時間軸がロックされています。<br>どの時間からタイムストリームを再開しますか？
+                </p>
+                <div style="background: rgba(0,0,0,0.4); padding: 12px; border-radius: 6px; border: 1px dashed rgba(0,210,255,0.4); font-size: 0.95rem; line-height: 1.4; color: #ccc;">
+                    現在の指定停止時間:<br>
+                    <span id="resume-modal-target-str" style="color: var(--neon-blue); font-weight: bold;">----/--/-- --:--:--</span>
+                </div>
+            </div>
+            <div class="modal-btns" style="flex-direction: column; gap: 12px;">
+                <button class="modal-btn modal-btn-resume-target" onclick="executeResume(false)">
+                    ① 指定した時間（停止位置）から再開する
+                </button>
+                <button class="modal-btn modal-btn-resume-now" onclick="executeResume(true)">
+                    ② 現実の現在の時間に戻して再開する
+                </button>
+                <button class="modal-btn modal-btn-cancel" onclick="closeResumeModal()" style="padding: 8px;">
+                    CANCEL (停止を維持)
+                </button>
+            </div>
+        </div>
+    </div>
+
+
     <div class="system-clock" id="main-clock-element">
-        SYS_TIME:&nbsp;
-        <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-year1"></div></div>
-        <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-year2"></div></div>
-        <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-year3"></div></div>
-        <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-year4"></div></div>/
-        <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-month1"><span>0</span></div></div>
-        <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-month2"><span>0</span></div></div>/
-        <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-day1"><span>0</span></div></div>
-        <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-day2"><span>0</span></div></div>&nbsp;
-        <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-hour1"><span>0</span></div></div>
-        <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-hour2"><span>0</span></div></div>:
-        <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-min1"><span>0</span></div></div>
-        <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-min2"><span>0</span></div></div>:
-        <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-sec1"><span>0</span></div></div>
-        <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-sec2"><span>0</span></div></div>
+        <span id="group-year" class="clock-unit-group">
+            <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-year1"></div></div>
+            <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-year2"></div></div>
+            <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-year3"></div></div>
+            <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-year4"></div></div>
+        </span>
+        <span id="sep-year" class="clock-separator">/</span>
+
+        <span id="group-month" class="clock-unit-group">
+            <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-month1"><span>0</span></div></div>
+            <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-month2"><span>0</span></div></div>
+        </span>
+        <span id="sep-month" class="clock-separator">/</span>
+
+        <span id="group-day" class="clock-unit-group">
+            <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-day1"><span>0</span></div></div>
+            <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-day2"><span>0</span></div></div>
+        </span>
+        
+        <span id="group-space-mid" class="clock-group-space"></span>
+
+        <span id="group-hour" class="clock-unit-group">
+            <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-hour1"><span>0</span></div></div>
+            <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-hour2"><span>0</span></div></div>
+        </span>
+        <span id="sep-hour" class="clock-separator">:</span>
+
+        <span id="group-min" class="clock-unit-group">
+            <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-min1"><span>0</span></div></div>
+            <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-min2"><span>0</span></div></div>
+        </span>
+        <span id="sep-min" class="clock-separator">:</span>
+
+        <span id="group-sec" class="clock-unit-group">
+            <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-sec1"><span>0</span></div></div>
+            <div class="clock-digit-slot"><div class="clock-digit-reel" id="reel-sec2"><span>0</span></div></div>
+        </span>
     </div>
 
     <div class="container" id="panel">
@@ -479,25 +757,25 @@
         </div>
 
         <div id="analyzing-screen" class="screen">
-            <div class="analyzing-title">RESYNCHRONIZING SYSTEM TIME...</div>
+            <div class="analyzing-title" id="analysis-title-text">RESYNCHRONIZING SYSTEM TIME...</div>
             <div class="percentage" id="percent-text">0%</div>
             <div class="scan-bar-container">
                 <div class="scan-bar" id="scan-progress"></div>
             </div>
-            <div style="font-size: 1.1rem; color: var(--neon-amber); letter-spacing: 1px;">
+            <div id="analysis-subtitle-text" style="font-size: 1.1rem; color: var(--neon-amber); letter-spacing: 1px;">
                 現在時刻へ同調中...
             </div>
         </div>
 
         <div id="syncing-screen" class="screen">
             <div class="syncing-title">⚠️ TIME DISTORTION BLOCKED</div>
-            <div class="sync-terminal">
+            <div class="sync-terminal" id="sync-terminal-text">
                 >> [EMERGENCY] DISTORTION DETECTED<br>
                 >> TIMELINE RESYNCHRONIZING...<br>
                 >> PULLING TEMPORAL AXIS BACK TO REALITY<br>
                 >> STATUS: RE-STABILIZING CHRONO DRIVE
             </div>
-            <div style="font-size: 1.2rem; color: var(--neon-purple); letter-spacing: 2px; font-weight: bold;">
+            <div id="syncing-footer-text" style="font-size: 1.2rem; color: var(--neon-purple); letter-spacing: 2px; font-weight: bold;">
                 時間軸の整合性を修正中...
             </div>
         </div>
@@ -515,11 +793,11 @@
 
         <div id="success-screen" class="screen">
             <div class="success-title">GAME CLEAR</div>
-            <p>タイムマシンの起動に成功しました。<br>再び時間が動き出しました。</p>
+            <p id="success-message">タイムマシンの起動に成功しました。<br>再び時間が動き出しました。</p>
             
             <div class="status-grid">
                 <div class="status-item"><span class="label">STATUS:</span><br><span class="value" style="color: #00ff66;">SYNCED</span></div>
-                <div class="status-item"><span class="label">TIMELINE:</span><br><span class="value">NORMAL</span></div>
+                <div class="status-item"><span class="label">TIMELINE:</span><br><span class="value" id="success-timeline">NORMAL</span></div>
                 <div class="status-item"><span class="label">CURRENT DATE:</span><br><span class="value" id="success-date">----/--/--</span></div>
                 <div class="status-item"><span class="label">REAL TIME:</span><br><span class="value" id="success-time">--:--:--</span></div>
             </div>
@@ -536,6 +814,11 @@
         let isSyncingTime = false;      
         let customTargetDate = null;    
         let isAnalyzing = false;        
+        let lastUpdateTime = Date.now(); 
+
+        // 成功時の再開モード管理 (1=現実、2=停止のまま、3=別の指定時間)
+        let successResumeMode = 1; 
+        let customSuccessDate = null; // ③を選択したときの再開用日時
 
         const audioSuccess = document.getElementById('snd-success');
         const audioError = document.getElementById('snd-error');
@@ -546,7 +829,6 @@
             'hour1', 'hour2', 'min1', 'min2', 'sec1', 'sec2'
         ];
 
-        // 縦ループスクロールが綺麗に繋がるよう、0~9の数値を3連（計30個）セットします
         function setupReels() {
             allReelIds.forEach(id => {
                 const reel = document.getElementById(`reel-${id}`);
@@ -563,7 +845,6 @@
         }
         setupReels();
 
-        // 1文字の高さを「24（px）」に固定し、中央のセット（インデックス10〜19）を使ってなめらかに移動させます
         function moveReelToDigit(id, targetDigit) {
             const pixelUnit = 24; 
             const digitInt = parseInt(targetDigit, 10) || 0;
@@ -616,57 +897,185 @@
         }
 
         function updateClock() {
-            if (!isTimeRunning || isSyncingTime) return;
+            const nowTime = Date.now();
+            const delta = nowTime - lastUpdateTime;
+            lastUpdateTime = nowTime;
+
+            if (isSyncingTime) return;
 
             if (isTimeHacked && customTargetDate) {
+                if (isTimeRunning) {
+                    customTargetDate = new Date(customTargetDate.getTime() + delta);
+                }
                 renderClock(customTargetDate);
             } else {
-                const now = new Date();
-                renderClock(now);
+                if (isTimeRunning) {
+                    renderClock(new Date());
+                }
             }
         }
-        setInterval(updateClock, 1000);
-        updateClock();
+        setInterval(updateClock, 100); 
+        lastUpdateTime = Date.now();
 
+        // ③のラジオボタンが選ばれた時だけ追加入力欄を出す処理
+        function toggleSuccessTimeInput() {
+            const isCustom = document.getElementById('rad-success-custom').checked;
+            document.getElementById('custom-success-time-container').style.display = isCustom ? 'block' : 'none';
+        }
 
-        // === 隠しコマンドイベント (Ctrl + Alt + Shift + C) ===
+        // === コマンドイベント (Ctrl + Alt + Shift + C) ===
         window.addEventListener('keydown', function(e) {
             if (e.ctrlKey && e.altKey && e.shiftKey && (e.key === 'c' || e.key === 'C')) {
                 e.preventDefault();
 
-                const baseDate = (isTimeHacked && customTargetDate) ? customTargetDate : new Date();
-                const defaultString = getFormattedDateTimeString(baseDate);
-
-                const input = prompt("【パラメータ設定】任意の時間を指定し、時空を停止させます:", defaultString);
-                
-                if (input) {
-                    const parsedDate = new Date(input);
-                    if (!isNaN(parsedDate.getTime())) {
-                        customTargetDate = parsedDate;
-                        isTimeHacked = true;
-                        isTimeRunning = false; 
-                        isSyncingTime = false;
-
-                        document.body.classList.add('time-hacked-state');
-                        renderClock(customTargetDate);
-
-                        const mainTitle = document.getElementById('main-title');
-                        const actionBtn = document.getElementById('action-btn');
-                        const passwordInput = document.getElementById('password');
-
-                        if (mainTitle) {
-                            mainTitle.className = "glitch-text-active";
-                            mainTitle.innerHTML = `<span style="color: var(--neon-red); text-shadow: 0 0 10px var(--neon-red);">[WARNING] TIME STOPPED</span><br><span style="font-size: 1.2rem; color: var(--neon-red); font-weight: bold; letter-spacing: 1px; text-shadow: 0 0 8px var(--neon-red);">時間停止中</span>`;
-                        }
-                        if (actionBtn) actionBtn.textContent = "タイムマシンを起動する";
-                        if (passwordInput) passwordInput.placeholder = "ENTER CODE";
-                    } else {
-                        alert("ERROR: 不正な日時フォーマットです。");
+                // 1. すでに時間が「停止」している場合は、途中再開方法を選ぶポップアップを開く
+                if (isTimeHacked && !isTimeRunning) {
+                    if (customTargetDate) {
+                        document.getElementById('resume-modal-target-str').textContent = getFormattedDateTimeString(customTargetDate);
                     }
+                    document.getElementById('resume-modal').classList.add('active');
+                    return;
                 }
+
+                // 2. まだ稼働中の場合は、新しく停止させる設定用ポップアップを開く
+                const baseDate = (isTimeHacked && customTargetDate) ? customTargetDate : new Date();
+                document.getElementById('modal-time-input').value = getFormattedDateTimeString(baseDate);
+                
+                // ③の入力欄の初期値
+                document.getElementById('modal-success-time-input').value = getFormattedDateTimeString(baseDate);
+                
+                document.getElementById('time-modal').classList.add('active');
             }
         });
 
+        function closeTimeModal() {
+            document.getElementById('time-modal').classList.remove('active');
+        }
+
+        function closeResumeModal() {
+            document.getElementById('resume-modal').classList.remove('active');
+        }
+
+        // モーダルで「EXECUTE」を押したときの停止設定
+        function submitTimeModal() {
+            const input = document.getElementById('modal-time-input').value;
+            const parsedDate = new Date(input);
+            
+            if (isNaN(parsedDate.getTime())) {
+                alert("ERROR: 不正な日時フォーマットです。");
+                return;
+            }
+
+            // 成功時の挙動設定（ラジオボタン）を判定して記憶
+            if (document.getElementById('rad-success-real').checked) {
+                successResumeMode = 1;
+            } else if (document.getElementById('rad-success-target').checked) {
+                successResumeMode = 2;
+            } else if (document.getElementById('rad-success-custom').checked) {
+                const customInput = document.getElementById('modal-success-time-input').value;
+                const parsedCustomDate = new Date(customInput);
+                if (isNaN(parsedCustomDate.getTime())) {
+                    alert("ERROR: 再開日時のフォーマットが不正です。");
+                    return;
+                }
+                successResumeMode = 3;
+                customSuccessDate = parsedCustomDate;
+            }
+
+            // 表示コンポーネント切り替え
+            const showYear = document.getElementById('chk-year').checked;
+            const showMonth = document.getElementById('chk-month').checked;
+            const showDay = document.getElementById('chk-day').checked;
+            const showHour = document.getElementById('chk-hour').checked;
+            const showMin = document.getElementById('chk-min').checked;
+            const showSec = document.getElementById('chk-sec').checked;
+
+            document.getElementById('group-year').classList.toggle('hide-component', !showYear);
+            document.getElementById('group-month').classList.toggle('hide-component', !showMonth);
+            document.getElementById('group-day').classList.toggle('hide-component', !showDay);
+
+            document.getElementById('sep-year').classList.toggle('hide-component', !(showYear && showMonth));
+            const needMonthSep = (showMonth && showDay) || (showYear && showDay && !showMonth);
+            document.getElementById('sep-month').classList.toggle('hide-component', !needMonthSep);
+
+            document.getElementById('group-hour').classList.toggle('hide-component', !showHour);
+            document.getElementById('group-min').classList.toggle('hide-component', !showMin);
+            document.getElementById('group-sec').classList.toggle('hide-component', !showSec);
+
+            document.getElementById('sep-hour').classList.toggle('hide-component', !(showHour && showMin));
+            const needMinSep = (showMin && showSec) || (showHour && showSec && !showMin);
+            document.getElementById('sep-min').classList.toggle('hide-component', !needMinSep);
+
+            const hasAnyDate = (showYear || showMonth || showDay);
+            const hasAnyTime = (showHour || showMin || showSec);
+            document.getElementById('group-space-mid').classList.toggle('hide-component', !(hasAnyDate && hasAnyTime));
+
+            // システム設定変更
+            customTargetDate = parsedDate;
+            isTimeHacked = true;
+            isTimeRunning = false; 
+            isSyncingTime = false;
+
+            document.body.classList.add('time-hacked-state');
+            lastUpdateTime = Date.now();
+            renderClock(customTargetDate);
+
+            // 警告タイトル表示
+            const formattedStr = getFormattedDateTimeString(customTargetDate);
+            const mainTitle = document.getElementById('main-title');
+            const actionBtn = document.getElementById('action-btn');
+            const passwordInput = document.getElementById('password');
+
+            if (mainTitle) {
+                mainTitle.className = "glitch-text-active";
+                mainTitle.innerHTML = `<span style="color: var(--neon-red); text-shadow: 0 0 10px var(--neon-red);">[WARNING] TIME STOPPED</span><br><span style="font-size: 1.1rem; color: #ff9999; letter-spacing: 1px;">AT ${formattedStr}</span>`;
+            }
+            if (actionBtn) actionBtn.textContent = "タイムマシンを起動する";
+            if (passwordInput) passwordInput.placeholder = "ENTER CODE";
+
+            closeTimeModal();
+        }
+
+        // コマンド途中再開処理 (デバッグ割り込み用)
+        function executeResume(isBackToPresentNow) {
+            isTimeRunning = true; 
+            lastUpdateTime = Date.now();
+
+            const mainTitle = document.getElementById('main-title');
+            const analysisTitle = document.getElementById('analysis-title-text');
+            const analysisSubtitle = document.getElementById('analysis-subtitle-text');
+
+            if (isBackToPresentNow) {
+                isTimeHacked = false; 
+                customTargetDate = null;
+                document.body.classList.remove('time-hacked-state');
+                
+                const items = ['group-year', 'group-month', 'group-day', 'group-hour', 'group-min', 'group-sec', 'sep-year', 'sep-month', 'sep-hour', 'sep-min', 'group-space-mid'];
+                items.forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el) el.classList.remove('hide-component');
+                });
+                
+                renderClock(new Date());
+
+                if (mainTitle) {
+                    mainTitle.className = "glitch-text-active";
+                    mainTitle.innerHTML = `TIME MACHINE<br><span style="font-size: 1.2rem; color: #fff; letter-spacing: 1px;">タイムマシン起動</span>`;
+                }
+                if (analysisTitle) analysisTitle.textContent = "RESYNCHRONIZING SYSTEM TIME...";
+                if (analysisSubtitle) analysisSubtitle.textContent = "現在時刻へ同調中...（手動割り込み）";
+            } else {
+                const formattedStr = getFormattedDateTimeString(customTargetDate);
+                if (mainTitle) {
+                    mainTitle.className = "glitch-text-active";
+                    mainTitle.innerHTML = `<span style="color: var(--neon-amber); text-shadow: 0 0 10px var(--neon-amber);">[WARNING] TIME ALTERED</span><br><span style="font-size: 1.1rem; color: #ffe0b3; letter-spacing: 1px;">FROM ${formattedStr}</span>`;
+                }
+                if (analysisTitle) analysisTitle.textContent = "STABILIZING ALTERED TIMELINE...";
+                if (analysisSubtitle) analysisSubtitle.textContent = "歪んだ時間軸を固定中...（手動割り込み）";
+            }
+
+            closeResumeModal();
+        }
 
         function checkPassword(inputStr) {
             if (inputStr.length !== ENCRYPTED_PASSWORD.length) return false;
@@ -676,6 +1085,7 @@
             return true;
         }
 
+        // 解析演出開始
         function startAnalysis() {
             if (isAnalyzing) return; 
             isAnalyzing = true;
@@ -685,34 +1095,38 @@
             const panel = document.getElementById('panel');
             const percentText = document.getElementById('percent-text');
             const scanProgress = document.getElementById('scan-progress');
+            const analysisTitle = document.getElementById('analysis-title-text');
+            const analysisSubtitle = document.getElementById('analysis-subtitle-text');
 
             if (lockScreen) lockScreen.classList.remove('active');
             if (analyzingScreen) analyzingScreen.classList.add('active');
             document.body.classList.add('analyzing-state');
             if (panel) panel.classList.add('analyzing-panel');
 
-            if (audioSuccess && audioError) {
-                audioSuccess.muted = true;
-                audioSuccess.play().then(() => {
-                    audioSuccess.pause();
-                    audioSuccess.muted = false;
-                }).catch(e => console.log("AudioSuccess unlock handled:", e));
-
-                audioError.muted = true;
-                audioError.play().then(() => {
-                    audioError.pause();
-                    audioError.muted = false;
-                }).catch(e => console.log("AudioError unlock handled:", e));
+            // 演出テキスト事前分岐
+            if (isTimeHacked && !isTimeRunning) {
+                if (successResumeMode === 1) {
+                    if (analysisTitle) analysisTitle.textContent = "RESYNCHRONIZING SYSTEM TIME...";
+                    if (analysisSubtitle) analysisSubtitle.textContent = "現在時刻へ同調シミュレート中...";
+                } else if (successResumeMode === 2) {
+                    if (analysisTitle) analysisTitle.textContent = "STABILIZING QUANTUM TIMELINE...";
+                    if (analysisSubtitle) analysisSubtitle.textContent = "指定された時間軸の固定処理中...";
+                } else if (successResumeMode === 3) {
+                    if (analysisTitle) analysisTitle.textContent = "CALCULATING TEMPORAL WARP COORD...";
+                    if (analysisSubtitle) analysisSubtitle.textContent = "指定された別の時間（ワープ先）の計算中...";
+                }
             }
 
-            try {
-                if (!audioCtx) {
-                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                }
-            } catch (e) { }
+            if (audioSuccess && audioError) {
+                audioSuccess.muted = true;
+                audioSuccess.play().then(() => { audioSuccess.pause(); audioSuccess.muted = false; }).catch(e => {});
+                audioError.muted = true;
+                audioError.play().then(() => { audioError.pause(); audioError.muted = false; }).catch(e => {});
+            }
+
+            try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
 
             let currentPercent = 0;
-
             function processNextStep() {
                 if (currentPercent >= 100) {
                     currentPercent = 100;
@@ -721,7 +1135,6 @@
                     setTimeout(verifyCode, 400);
                     return;
                 }
-
                 let progressIncrement = Math.floor(Math.random() * 12);
                 if (Math.random() < 0.15) progressIncrement = Math.floor(Math.random() * 15) + 10;
                 let nextDelay = Math.floor(Math.random() * 180) + 40; 
@@ -729,7 +1142,6 @@
                     progressIncrement = 0; 
                     nextDelay = Math.floor(Math.random() * 500) + 400; 
                 }
-
                 currentPercent += progressIncrement;
                 if (currentPercent > 100) currentPercent = 100;
                 if (percentText) percentText.textContent = currentPercent + "%";
@@ -749,19 +1161,38 @@
                 osc.frequency.setValueAtTime(1400, audioCtx.currentTime);
                 gainNode.gain.setValueAtTime(0.04, audioCtx.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.02);
-                osc.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.02);
-            } catch (e) { }
+                osc.connect(gainNode); gainNode.connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.02);
+            } catch (e) {}
         }
 
-        function syncToPresentTime(callback) {
+        // 時間同期・ジャンプ共通の激しいリールスピン演出
+        function launchClockSpinAnimation(targetType, callback) {
             isSyncingTime = true;
-            
             const clockEl = document.getElementById('main-clock-element');
             const panelEl = document.getElementById('panel');
             const syncingScreen = document.getElementById('syncing-screen');
+            const terminalEl = document.getElementById('sync-terminal-text');
+            const footerEl = document.getElementById('syncing-footer-text');
+
+            // 演出中のテキストをモード別に切り替える
+            if (targetType === "JUMP") {
+                if (terminalEl) {
+                    terminalEl.innerHTML = `>> [INITIATING] TEMPORAL JUMP SEQUENCE<br>
+>> WARPING CHRONO STREAM TO NEW COORDINATES<br>
+>> OPENING DIMENSIONAL PORTAL AT DESTINATION<br>
+>> STATUS: CONVERGING QUANTUM STATES`;
+                }
+                if (footerEl) footerEl.textContent = "時空跳躍（タイムジャンプ）座標を展開中...";
+            } else {
+                if (terminalEl) {
+                    terminalEl.innerHTML = `>> [EMERGENCY] DISTORTION DETECTED<br>
+>> TIMELINE RESYNCHRONIZING...<br>
+>> PULLING TEMPORAL AXIS BACK TO REALITY<br>
+>> STATUS: RE-STABILIZING CHRONO DRIVE`;
+                }
+                if (footerEl) footerEl.textContent = "時間軸の整合性を修正中...";
+            }
 
             if (syncingScreen) syncingScreen.classList.add('active');
             if (panelEl) panelEl.classList.add('syncing-panel');
@@ -777,10 +1208,7 @@
 
             function spinStep() {
                 durationCounter++;
-
                 if (durationCounter >= totalSteps) {
-                    isTimeHacked = false;
-                    isTimeRunning = true;
                     isSyncingTime = false;
 
                     reels.forEach(r => r.classList.remove('spinning'));
@@ -789,33 +1217,33 @@
                     if (syncingScreen) syncingScreen.classList.remove('active');
                     if (panelEl) panelEl.classList.remove('syncing-panel');
                     
-                    // 現実の現在時刻にピタッとなめらかに着地
-                    renderClock(new Date()); 
+                    // 全パーツの非表示クラスを一斉リセット
+                    const items = ['group-year', 'group-month', 'group-day', 'group-hour', 'group-min', 'group-sec', 'sep-year', 'sep-month', 'sep-hour', 'sep-min', 'group-space-mid'];
+                    items.forEach(id => {
+                        const el = document.getElementById(id);
+                        if(el) el.classList.remove('hide-component');
+                    });
+
                     callback(); 
                     return;
                 }
 
                 const pixelUnit = 24;
-                
-                // 全30個の選択肢から縦位置を毎回高速シャッフル
                 allReelIds.forEach(id => {
                     const randomSlotIndex = Math.floor(Math.random() * 30);
                     const reel = document.getElementById(`reel-${id}`);
-                    if (reel) {
-                        reel.style.transform = `translateY(-${randomSlotIndex * pixelUnit}px)`;
-                    }
+                    if (reel) reel.style.transform = `translateY(-${randomSlotIndex * pixelUnit}px)`;
                 });
 
                 playTickBeep(); 
                 setTimeout(spinStep, 40);
             }
-
             spinStep();
         }
 
+        // コード判定ロジック
         function verifyCode() {
             isAnalyzing = false; 
-
             const passwordInput = document.getElementById('password');
             const input = passwordInput ? passwordInput.value : "";
             
@@ -829,44 +1257,83 @@
             if (panel) panel.classList.remove('analyzing-panel');
 
             if (checkPassword(input)) {
-                document.body.classList.remove('time-hacked-state');
-
-                if (isTimeHacked && customTargetDate) {
-                    syncToPresentTime(() => {
-                        if (successScreen) successScreen.classList.add('active');
-                        if (panel) panel.classList.add('success-panel');
-                        document.body.style.backgroundColor = '#003311';
-                        
-                        if (audioSuccess) {
-                            audioSuccess.currentTime = 0;
-                            audioSuccess.play().catch(e => console.log("Audio play blocked:", e));
-                        }
-
-                        setTimeout(() => { document.body.style.backgroundColor = '#0a0e14'; }, 200);
-                    });
-                } else {
-                    isTimeRunning = true;
-                    if (successScreen) successScreen.classList.add('active');
-                    if (panel) panel.classList.add('success-panel');
-                    document.body.style.backgroundColor = '#003311';
-                    
-                    if (audioSuccess) {
-                        audioSuccess.currentTime = 0;
-                        audioSuccess.play().catch(e => console.log("Audio play blocked:", e));
+                // パスワード正解
+                if (isTimeHacked && !isTimeRunning) {
+                    if (successResumeMode === 1) {
+                        // ① 現実時間から再開
+                        document.body.classList.remove('time-hacked-state');
+                        launchClockSpinAnimation("REAL", () => {
+                            isTimeHacked = false;
+                            isTimeRunning = true;
+                            renderClock(new Date());
+                            showSuccessState(successScreen, panel, "PRESENT");
+                        });
+                    } else if (successResumeMode === 2) {
+                        // ② 停止した時間のまま進める (スピン演出をせずその場からスタート)
+                        isTimeRunning = true;
+                        lastUpdateTime = Date.now();
+                        showSuccessState(successScreen, panel, "ALTERED");
+                    } else if (successResumeMode === 3) {
+                        // ③ 別の指定した時間から再開 (スピン演出を挟んでその時間へワープ)
+                        launchClockSpinAnimation("JUMP", () => {
+                            isTimeHacked = true;
+                            isTimeRunning = true;
+                            customTargetDate = new customSuccessDate.constructor(customSuccessDate.getTime());
+                            lastUpdateTime = Date.now();
+                            renderClock(customTargetDate);
+                            showSuccessState(successScreen, panel, "JUMPED");
+                        });
                     }
-
-                    setTimeout(() => { document.body.style.backgroundColor = '#0a0e14'; }, 200);
+                } else {
+                    // 最初から通常稼働中、または手動再開済み状態だった場合
+                    document.body.classList.remove('time-hacked-state');
+                    isTimeRunning = true;
+                    showSuccessState(successScreen, panel, isTimeHacked ? "ALTERED" : "NORMAL");
                 }
             } else {
+                // パスワード失敗
                 if (errorScreen) errorScreen.classList.add('active');
                 document.body.classList.add('error-state');
                 if (panel) panel.classList.add('error-panel');
 
                 if (audioError) {
                     audioError.currentTime = 0;
-                    audioError.play().catch(e => console.log("Audio play blocked:", e));
+                    audioError.play().catch(e => {});
                 }
             }
+        }
+
+        function showSuccessState(successScreen, panel, timelineStatus) {
+            if (successScreen) successScreen.classList.add('active');
+            if (panel) panel.classList.add('success-panel');
+            
+            const msgEl = document.getElementById('success-message');
+            const tlEl = document.getElementById('success-timeline');
+            
+            if (timelineStatus === "ALTERED") {
+                if (msgEl) msgEl.innerHTML = "指定された時間軸の固定化に成功しました。<br>歪んだ時空の中で、指定時刻から再び時間が動き出します。";
+                if (tlEl) tlEl.textContent = "ALTERED (TRAVEL)";
+                document.body.classList.add('time-hacked-state');
+            } else if (timelineStatus === "JUMPED") {
+                if (msgEl) msgEl.innerHTML = "時空跳躍（タイムジャンプ）の実行に成功しました。<br>指定された「第2の未来（過去）」から新しく時間が進行します。";
+                if (tlEl) tlEl.textContent = "TEMPORAL JUMPED";
+                document.body.classList.add('time-hacked-state'); // トラベル/ジャンプ時は紫ネオン
+            } else if (timelineStatus === "PRESENT") {
+                if (msgEl) msgEl.innerHTML = "タイムロックを正常にオーバーライドしました。<br>タイムラインを現実の現在時刻に強制同期しました。";
+                if (tlEl) tlEl.textContent = "SYNCHRONIZED";
+            } else {
+                if (msgEl) msgEl.innerHTML = "タイムマシンの起動に成功しました。<br>再び時間が動き出しました。";
+                if (tlEl) tlEl.textContent = "NORMAL";
+            }
+
+            document.body.style.backgroundColor = '#003311';
+            if (audioSuccess) {
+                audioSuccess.currentTime = 0;
+                audioSuccess.play().catch(e => {});
+            }
+            setTimeout(() => { 
+                document.body.style.backgroundColor = '#0a0e14';
+            }, 200);
         }
 
         function resetSystem() {
@@ -886,10 +1353,8 @@
                 panel.classList.remove('success-panel');
                 panel.classList.remove('syncing-panel');
             }
-            
             if (percentText) percentText.textContent = "0%";
             if (scanProgress) scanProgress.style.width = "0%";
-
             if (passwordInput) {
                 passwordInput.value = "";
                 passwordInput.focus();
