@@ -76,8 +76,15 @@
             color: var(--neon-blue);
             margin: 0 2px;
         }
-        body.time-hacked-state .clock-separator {
-            color: var(--neon-purple);
+
+        body.time-hacked-state:not(.is-stopped-mode) .clock-separator {
+            color: #00ff45;
+        }
+
+        /* トラベル（ALTERED）成功時にセパレーターを緑色に変更する設定 */
+        body.travel-success-state .clock-separator {
+            color: var(--neon-green) !important;
+            text-shadow: 0 0 8px rgba(0, 255, 102, 0.6) !important;
         }
 
         .clock-group-space {
@@ -85,9 +92,10 @@
             display: inline-block;
         }
 
-        body.time-hacked-state .system-clock {
+        /* 【修正】TIME STOPPED時の紫色の変化・グリッチを除外 */
+        body.time-hacked-state:not(.is-stopped-mode) .system-clock {
             animation: text-glitch 0.5s infinite;
-            color: var(--neon-purple);
+            color: #00ff5c;
         }
 
         .system-clock.sync-jitter {
@@ -326,9 +334,10 @@
             margin: 40px 20px; /* 上下に余白をつけてスクロール時に見やすく */
         }
 
-        body.time-hacked-state .container {
-            border-color: var(--neon-purple) !important;
-            box-shadow: 0 0 25px rgba(255, 0, 255, 0.4) !important;
+
+        body.time-hacked-state:not(.is-stopped-mode) .container {
+            border-color: #00ff74 !important;
+            box-shadow: 0 0 25px rgba(0, 255, 10, 0.4) !important;
         }
 
         .container.analyzing-panel {
@@ -388,10 +397,11 @@
             box-shadow: 0 0 15px rgba(0, 255, 102, 0.5);
         }
 
-        body.time-hacked-state input[type="text"] {
+        /* 【修正】TIME STOPPEDの時はインプットボックスの枠線を緑色のまま維持 */
+        body.time-hacked-state:not(.is-stopped-mode) input[type="text"] {
             border-color: rgba(255, 0, 255, 0.6) !important;
         }
-        body.time-hacked-state input[type="text"]:focus {
+        body.time-hacked-state:not(.is-stopped-mode) input[type="text"]:focus {
             box-shadow: 0 0 15px rgba(255, 0, 255, 0.5) !important;
         }
 
@@ -417,11 +427,12 @@
             font-weight: bold;
         }
 
-        body.time-hacked-state button {
+        /* 【修正】TIME STOPPEDの時は起動ボタンを緑色のまま維持 */
+        body.time-hacked-state:not(.is-stopped-mode) button {
             border-color: var(--neon-purple) !important;
             color: var(--neon-purple) !important;
         }
-        body.time-hacked-state button:hover {
+        body.time-hacked-state:not(.is-stopped-mode) button:hover {
             background: var(--neon-purple) !important;
             color: #fff !important;
             box-shadow: 0 0 20px var(--neon-purple) !important;
@@ -1017,7 +1028,11 @@
             isTimeRunning = false; 
             isSyncingTime = false;
 
+            document.body.classList.remove('travel-success-state'); // 状態のリセット
             document.body.classList.add('time-hacked-state');
+            /* 【修正】TIME STOPPED用の「緑色維持判定用」クラスを追加 */
+            document.body.classList.add('is-stopped-mode');
+
             lastUpdateTime = Date.now();
             renderClock(customTargetDate);
 
@@ -1028,7 +1043,7 @@
 
             if (mainTitle) {
                 mainTitle.className = "glitch-text-active";
-                mainTitle.innerHTML = `<span style="color: var(--neon-red); text-shadow: 0 0 10px var(--neon-red);">[WARNING] TIME STOPPED</span><br><span style="font-size: 1.1rem; color: #ff9999; letter-spacing: 1px;">&nbsp;</span>`;
+                mainTitle.innerHTML = `            <h1 id="main-title" class="glitch-text-active">TIME MACHINE<br><span style="font-size: 1.2rem; color: #fff; letter-spacing: 1px;">タイムマシン起動</span></h1>`;
             }
             if (actionBtn) actionBtn.textContent = "タイムマシンを起動する";
             if (passwordInput) passwordInput.placeholder = "ENTER CODE";
@@ -1044,6 +1059,10 @@
             const mainTitle = document.getElementById('main-title');
             const analysisTitle = document.getElementById('analysis-title-text');
             const analysisSubtitle = document.getElementById('analysis-subtitle-text');
+
+            /* 【修正】途中再開時は緑色維持判定用クラスを削除 */
+            document.body.classList.remove('is-stopped-mode');
+            document.body.classList.remove('travel-success-state');
 
             if (isBackToPresentNow) {
                 isTimeHacked = false; 
@@ -1182,7 +1201,7 @@
 >> OPENING DIMENSIONAL PORTAL AT DESTINATION<br>
 >> STATUS: CONVERGING QUANTUM STATES`;
                 }
-                if (footerEl) footerEl.textContent = "時空跳躍（タイムジャンプ）座標を展開中...";
+                if (footerEl) footerEl.textContent = "時空跳躍座標を展開中...";
             } else {
                 if (terminalEl) {
                     terminalEl.innerHTML = `>> [EMERGENCY] DISTORTION DETECTED<br>
@@ -1252,10 +1271,14 @@
 
             if (checkPassword(input)) {
                 // パスワード正解
+                /* 【修正】解除時は判定用クラスを削除 */
+                document.body.classList.remove('is-stopped-mode');
+
                 if (isTimeHacked && !isTimeRunning) {
                     if (successResumeMode === 1) {
                         // ① 現実時間から再開
                         document.body.classList.remove('time-hacked-state');
+                        document.body.classList.remove('travel-success-state');
                         launchClockSpinAnimation("REAL", () => {
                             isTimeHacked = false;
                             isTimeRunning = true;
@@ -1263,12 +1286,14 @@
                             showSuccessState(successScreen, panel, "PRESENT");
                         });
                     } else if (successResumeMode === 2) {
-                        // ② 停止した時間のまま進める
+                        // ② 停止した時間のまま進める (トラベル)
                         isTimeRunning = true;
                         lastUpdateTime = Date.now();
+                        document.body.classList.add('travel-success-state'); // 区切り文字を緑にするクラスを追加
                         showSuccessState(successScreen, panel, "ALTERED");
                     } else if (successResumeMode === 3) {
                         // ③ 別の指定した時間から再開
+                        document.body.classList.remove('travel-success-state');
                         launchClockSpinAnimation("JUMP", () => {
                             isTimeHacked = true;
                             isTimeRunning = true;
@@ -1281,6 +1306,7 @@
                 } else {
                     // 最初から通常稼働中、または手動再開済み状態だった場合
                     document.body.classList.remove('time-hacked-state');
+                    document.body.classList.remove('travel-success-state');
                     isTimeRunning = true;
                     showSuccessState(successScreen, panel, isTimeHacked ? "ALTERED" : "NORMAL");
                 }
@@ -1309,7 +1335,7 @@
                 if (tlEl) tlEl.textContent = "ALTERED (TRAVEL)";
                 document.body.classList.add('time-hacked-state');
             } else if (timelineStatus === "JUMPED") {
-                if (msgEl) msgEl.innerHTML = "時空跳躍（タイムジャンプ）の実行に成功しました。<br>時間が進行します。";
+                if (msgEl) msgEl.innerHTML = "時空跳躍の実行に成功しました。<br>時間が進行します。";
                 if (tlEl) tlEl.textContent = "TEMPORAL JUMPED";
                 document.body.classList.add('time-hacked-state'); 
             } else if (timelineStatus === "PRESENT") {
@@ -1342,6 +1368,7 @@
             if (lockScreen) lockScreen.classList.add('active');
             
             document.body.classList.remove('error-state');
+            document.body.classList.remove('travel-success-state');
             if (panel) {
                 panel.classList.remove('error-panel');
                 panel.classList.remove('success-panel');
