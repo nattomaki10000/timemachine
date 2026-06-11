@@ -183,6 +183,36 @@
             filter: blur(1px); 
         }
 
+        /* 画面右下の再試行（リロード）ボタン */
+        .clear-retry-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: transparent;
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            padding: 12px 28px;
+            font-size: 1.1rem;
+            font-family: inherit;
+            cursor: pointer;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            width: auto;
+            display: none; /* 初期状態は非表示 */
+            z-index: 999;
+            box-shadow: 0 0 10px rgba(0, 255, 102, 0.1);
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .clear-retry-button:hover {
+            background: var(--neon-green);
+            color: var(--dark-bg);
+            box-shadow: 0 0 15px var(--neon-green);
+            font-weight: bold;
+        }
+
         /* HTML製カスタムポップアップ */
         .modal-overlay {
             position: fixed;
@@ -345,7 +375,7 @@
 
         body.time-hacked-state:not(.is-stopped-mode) .container {
             border-color: #00ff74 !important;
-            box-shadow: 0 0 25px rgba(0, 255, 10, 0.4) !important;
+            box-shadow: 0 0 25px rgba(0, 25, 10, 0.4) !important;
         }
 
         .container.analyzing-panel {
@@ -650,7 +680,7 @@
         }
     </style>
 </head>
-<body class="time-hacked-state is-stopped-mode">
+<body class="time-hacked-state is-stopped-mode show-furigana">
 
     <audio id="snd-success" src="success.m4a" preload="auto"></audio>
     <audio id="snd-error" src="error.m4a" preload="auto"></audio>
@@ -663,7 +693,11 @@
                 <label style="margin-bottom: 8px;">🔑 パスワード<ruby>設定<rt>せってい</rt></ruby>：</label>
                 <div class="radio-group-box">
                     <label class="radio-label">
-                        <input type="radio" name="password-select" id="rad-pw-1" checked> 
+                        <input type="radio" name="password-select" id="rad-pw-any" checked> 
+                        <span style="color: #ffffff;">④ どれでも（全パスワード有効）</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="password-select" id="rad-pw-1"> 
                         <span style="color: var(--neon-green);">① 獄難（69******）</span>
                     </label>
                     <label class="radio-label">
@@ -681,7 +715,7 @@
                 <label style="margin-bottom: 8px;">📖 ふりがな（ルビ）<ruby>表示<rt>ひょうじ</rt></ruby>：</label>
                 <div class="checkbox-grid">
                     <label class="checkbox-label">
-                        <input type="checkbox" id="chk-furigana" onchange="toggleFurigana()"> 漢字にふりがなを付ける
+                        <input type="checkbox" id="chk-furigana" onchange="toggleFurigana()" checked> 漢字にふりがなを付ける
                     </label>
                 </div>
             </div>
@@ -771,6 +805,8 @@
         </span>
     </div>
 
+    <button class="clear-retry-button" id="clear-page-reload-btn" onclick="location.reload();">再試行 (RETRY)</button>
+
     <div class="container" id="panel">
         
         <div id="lock-screen" class="screen active">
@@ -813,7 +849,7 @@
                 STATUS: TIME FREEZE CONTINUED<br>
                 コードが<ruby>拒否<rt>きょひ</rt></ruby>されました。<ruby>時間<rt>じかん</rt></ruby>は<ruby>停止<rt>ていし</rt></ruby>したままです。
             </div>
-            <button class="btn-retry" onclick="resetSystem()">システム<ruby>再起動<rt>さいきどう</rt></ruby> (RETRY)</button>
+            <button class="btn-retry" onclick="location.reload();">システム<ruby>再起動<rt>さいきどう</rt></ruby> (RETRY)</button>
         </div>
 
         <div id="success-screen" class="screen">
@@ -831,12 +867,12 @@
     </div>
 
     <script>
-        // 設定されたパスワード変数（デフォルトは1つ目）
-        let activePassword = "69496013";
+        // 設定されたパスワード変数（デフォルトはどれでも）
+        let activePassword = "ANY";
 
         let audioCtx = null;
         
-        // 【変更点】 最初から時間は止まっている状態に設定
+        // 最初から時間は止まっている状態に設定
         let isTimeHacked = true;       
         let isTimeRunning = false;       
         let isSyncingTime = false;      
@@ -954,7 +990,6 @@
         }
 
         // === コマンドイベント (Ctrl + Alt + Shift + C) ===
-        // 【変更点】 Resume Menuを削除し、常に通常の設定画面を開くように統一
         window.addEventListener('keydown', function(e) {
             if (e.ctrlKey && e.altKey && e.shiftKey && (e.key === 'c' || e.key === 'C')) {
                 e.preventDefault();
@@ -981,7 +1016,8 @@
             }
 
             // パスワード設定の読み込み
-            if (document.getElementById('rad-pw-1').checked) activePassword = "69496013";
+            if (document.getElementById('rad-pw-any').checked) activePassword = "ANY";
+            else if (document.getElementById('rad-pw-1').checked) activePassword = "69496013";
             else if (document.getElementById('rad-pw-2').checked) activePassword = "2444496";
             else if (document.getElementById('rad-pw-3').checked) activePassword = "512";
 
@@ -1050,10 +1086,16 @@
             if (actionBtn) actionBtn.innerHTML = "タイムマシンを<ruby>起動<rt>きどう</rt></ruby>する";
             if (passwordInput) passwordInput.placeholder = "ENTER CODE";
 
+            // 設定を再読み込みした場合は画面右下の再試行ボタンを非表示に戻す
+            document.getElementById('clear-page-reload-btn').style.display = 'none';
+
             closeTimeModal();
         }
 
         function checkPassword(inputStr) {
+            if (activePassword === "ANY") {
+                return inputStr === "69496013" || inputStr === "2444496" || inputStr === "512";
+            }
             return inputStr === activePassword;
         }
 
@@ -1115,6 +1157,7 @@
                 currentPercent += progressIncrement;
                 if (currentPercent > 100) currentPercent = 100;
                 if (percentText) percentText.textContent = currentPercent + "%";
+                if (scanProgress) Math.random(); 
                 if (scanProgress) scanProgress.style.width = currentPercent + "%";
 
                 setTimeout(processNextStep, nextDelay);
@@ -1294,6 +1337,12 @@
             setTimeout(() => { 
                 document.body.style.backgroundColor = '#0a0e14';
             }, 200);
+
+            // クリア画面（GAME CLEAR）になったタイミングで、画面右下に再試行ボタンを表示
+            const reloadBtn = document.getElementById('clear-page-reload-btn');
+            if (reloadBtn) {
+                reloadBtn.style.display = 'flex';
+            }
         }
 
         function resetSystem() {
